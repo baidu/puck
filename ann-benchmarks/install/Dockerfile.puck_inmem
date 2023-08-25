@@ -1,0 +1,8 @@
+FROM billion-scale-benchmark
+
+RUN wget -O output.tar.gz --no-check-certificate --header "IREPO-TOKEN:eb9aa1b8-6523-4948-99cf-0d0e0833968a" "https://irepo.baidu-int.com/rest/prod/v3/baidu/mirana/puck/releases/1.0.2.1/files"
+
+RUN tar zxvf output.tar.gz 
+RUN mv output/puck_to_python.tar.gz ./
+RUN tar zxvf puck_to_python.tar.gz
+RUN python3 -c 'from puck import py_puck_api'

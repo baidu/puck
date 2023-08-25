@@ -1,0 +1,37 @@
+#edit-mode: -*- python -*-
+#coding:gbk
+
+ImportConfigsFrom('../')
+
+#platform, if not write PLATFORM('xxx') in BCLOUD file, default is 'redhat4u3'
+#PLATFORM('centos4u3')
+
+#gcc version, default 'gcc'
+COMPILER('gcc12')
+if GLOBAL_GCC_VERSION() == 'gcc82':
+    CPPFLAGS('-Wno-error=sizeof-pointer-div')
+    CPPFLAGS('-Wno-error=cast-function-type')
+    CPPFLAGS('-Wno-error=stringop-truncation')
+    CPPFLAGS('-Wno-error=unused-parameter')
+    CPPFLAGS('-Wno-cast-function-type')
+    CPPFLAGS('-Wno-error=sign-compare')
+
+CPPFLAGS('-std=c++11 -Wall -fopenmp  -msse4 -Wcast-align -Ofast -lm -lrt -pthread  -DHAVE_CXX0X -march=native -Wl,--no-as-needed -fpic -g -DFINTEGER=int')
+
+#link flags
+LDFLAGS('-lpthread -pthread -lcrypto -lrt -ldl -fopenmp -lz')
+
+#-I path
+INCPATHS('../')
+
+user_sources=GLOB(' ../puck/*.cpp ../puck/base/*.cpp  ../puck/gflags/*.cpp ../puck/hierarchical_cluster/*.cpp ../puck/puck/*.cpp ../puck/tinker/*.cpp ../puck/tinker/method/*.cc')
+
+train_source=" train.cpp " + user_sources
+build_source=" build.cpp " + user_sources
+
+#bin
+Application('train', Sources(train_source))
+Application('build', Sources(build_source))
+
+OUTPUT(GLOB('./script/*'), '$OUT/build_tools/script/')
+OUTPUT(GLOB('./demo/*'), '$OUT/build_tools/')

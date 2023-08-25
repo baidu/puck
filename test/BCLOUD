@@ -1,0 +1,43 @@
+#edit-mode: -*- python -*-
+#coding:gbk
+
+WORKROOT('../../../')
+
+#platform, if not write PLATFORM('xxx') in BCLOUD file, default is 'redhat4u3'
+#PLATFORM('centos4u3')
+
+#gcc version, default 'gcc'
+COMPILER('gcc12')
+if GLOBAL_GCC_VERSION() == 'gcc82':
+    CPPFLAGS('-Wno-error=sizeof-pointer-div')
+    CPPFLAGS('-Wno-error=cast-function-type')
+    CPPFLAGS('-Wno-error=stringop-truncation')
+    CPPFLAGS('-Wno-error=unused-parameter')
+    CPPFLAGS('-Wno-cast-function-type')
+    CPPFLAGS('-Wno-error=sign-compare')
+
+
+CPPFLAGS('-std=c++11 -Wall -fopenmp  -msse4 -Wcast-align -Ofast -lm -lrt -pthread  -DHAVE_CXX0X -march=native -Wl,--no-as-needed -fpic -g -DFINTEGER=int -fno-access-control')
+
+#CONFIGS('baidu/third-party/yael@yael_v438@git_branch')
+CONFIGS('baidu/third-party/mkl@mkl_2019-3-199-1_PD_BL@git_tag')
+#CONFIGS('baidu/base/common@stable')
+#CONFIGS('third-64/gflags@gflags_2-0-0-100_PD_BL')
+#CONFIGS('third-64/boost@boost_1-56-0-100_PD_BL', Libraries(''))
+CONFIGS('baidu/third-party/swig@master@git_branch')
+CONFIGS("baidu/third-party/cpython@cpython_3.6_3-6-0-0_GEN_PD_BL@git_tag")
+CONFIGS('baidu/third-party/glog@0.6.0@git_branch')
+#link flags
+LDFLAGS('-lpthread -pthread -lcrypto -lrt -ldl -fopenmp -lz')
+#-I path
+INCPATHS('../')
+
+test_online_sources= GLOB('test_main.cpp test_params.cpp  ../puck/*.cpp ../puck/base/*.cpp ../puck/gflags/*.cpp ../puck/hierarchical_cluster/*.cpp ../puck/tinker/*.cpp ../puck/tinker/method/*.cc ../puck/puck/*.cpp ')
+test_offline_sources= GLOB('test_*.cpp  ../puck/*.cpp ../puck/base/*.cpp ../puck/gflags/*.cpp ../puck/hierarchical_cluster/*.cpp ../puck/tinker/*.cpp ../puck/tinker/method/*.cc ../puck/puck/*.cpp ')
+
+UTApplication('runtest',
+               Sources(test_online_sources),
+               UTOnServer(True))
+UTApplication('runtest_offline',
+               Sources(test_offline_sources),
+               UTOnServer(False))

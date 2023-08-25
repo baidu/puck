@@ -1,0 +1,2396 @@
+#any:
+#    faiss-ivf:
+#      docker-tag: billion-scale-benchmark-faissconda
+#      module: benchmark.algorithms.faiss_inmem
+#      constructor: FaissIVF
+#      base-args: ["@metric"]
+#      run-groups:
+#        base:
+#          args: [[1024,2048,4096,8192]]
+#          query-args: [[1, 5, 10, 50, 100, 200]]
+random-range-xs:
+    faiss-t1:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_t1
+      constructor: Faiss
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          # the following args show all build arguments that can be provided to the t1 baseline.
+          args: |
+              [{"indexkey": "OPQ32_128,IVF1024_HNSW32,PQ32",
+                "buildthreads": -1,
+                "by_residual": -1,
+                "add_bs": 100000000,
+                "two_level_clustering": true,
+                "quantizer_add_efSearch": 80,
+                "quantizer_efConstruction": 200,
+                "maxtrain": 100000000,
+                "clustering_niter": 25
+                }]
+          query-args: |
+              ["nprobe=1,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=8",
+              "nprobe=4,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=16"]
+    diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":32, "L":32, "B":0.0001, "M":1}]
+          query-args: |
+            [{"Lmin":3, "Lmax":100, "BW":4, "T":16}]
+    httpann_example:
+      docker-tag: billion-scale-benchmark-httpann_example
+      module: benchmark.algorithms.httpann_example
+      constructor: HttpANNExampleAlgorithm
+      base-args: [ "@metric", "@dimension" ]
+      run-groups:
+        base:
+          args:
+            - [ 0.2, 0.4, 1.0 ]
+          query-args: []
+random-xs:
+    faiss-t1:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_t1
+      constructor: Faiss
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "OPQ32_128,IVF1024_HNSW32,PQ32"
+                }]
+          query-args: |
+              ["nprobe=1,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=8",
+              "nprobe=4,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=16"]
+    diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":32, "L":32, "B":0.0001, "M":1}]
+          query-args: |
+              [{"Ls":10, "BW":4, "T":16}]
+    httpann_example:
+      docker-tag: billion-scale-benchmark-httpann_example
+      module: benchmark.algorithms.httpann_example
+      constructor: HttpANNExampleAlgorithm
+      base-args: [ "@metric", "@dimension" ]
+      run-groups:
+        base:
+          args:
+            - [ 0.2, 0.8, 1.0 ]
+          query-args: [ ]
+    puck-t1:
+      docker-tag: billion-scale-benchmark-puck
+      module: benchmark.algorithms.puck_t1
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "C10_F10_F5_FN20",
+                "url": "https://gips-test-bucket-0-gz.gz.bcebos.com/similar/random-xs.C10_F10_F5_FN20.puckindex"}]
+          query-args: |
+               [
+                  
+                 "10,20,2000,200",
+                 "10,30,3000,200"]
+    puck-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"C":100, "F":100, "FN":5, "N":20}]
+          query-args: |
+                [ 
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+
+
+                  ]
+
+    puck-flat-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"C":100, "F":100, "FN":5, "N":0}]
+          query-args: |
+                [ 
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+                ]
+
+    tinker-inmem-M16:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"index_type":2, "C":100, "F":100,"tinker_neighborhood":6,"tinker_construction":60}]
+          query-args: |
+                [
+                  {"search_coarse_count":10, "tinker_search_range": 100},
+                  {"search_coarse_count":10, "tinker_search_range": 200},
+                  {"search_coarse_count":10, "tinker_search_range": 300},
+                  {"search_coarse_count":10, "tinker_search_range": 400},
+                  {"search_coarse_count":10, "tinker_search_range": 500},
+                  {"search_coarse_count":10, "tinker_search_range": 600},
+                  {"search_coarse_count":10, "tinker_search_range": 700},
+                  {"search_coarse_count":10, "tinker_search_range": 800},
+                  {"search_coarse_count":10, "tinker_search_range": 900},
+                  {"search_coarse_count":10, "tinker_search_range": 1000},
+                  {"search_coarse_count":10, "tinker_search_range": 1100},
+                  {"search_coarse_count":10, "tinker_search_range": 1200},
+                  {"search_coarse_count":10, "tinker_search_range": 1300},
+                  {"search_coarse_count":10, "tinker_search_range": 1400}
+                ]
+   
+
+deep-10M:
+    faiss-IVF:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+                [{"indexkey": "IVF31622,Flat"
+                }]
+          query-args: |
+              [ 
+                "nprobe=30",
+                "nprobe=35",
+                "nprobe=40",
+                "nprobe=45",
+                "nprobe=50",
+                "nprobe=55",
+                "nprobe=60",
+                "nprobe=65",
+                "nprobe=66",
+                "nprobe=67",
+                "nprobe=68",
+                "nprobe=69",
+                "nprobe=70",
+                "nprobe=71",
+                "nprobe=72",
+                "nprobe=73",
+                "nprobe=74",
+                "nprobe=75",
+                "nprobe=80",
+                "nprobe=85",
+                "nprobe=90",
+                "nprobe=95",
+                "nprobe=100",
+                "nprobe=110",
+                "nprobe=120",
+                "nprobe=130",
+                "nprobe=140",
+                "nprobe=150"
+              ]
+
+    faiss-IVFPQ:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "IVF31622,PQ96"
+                }]
+          query-args: |
+              [ 
+                "nprobe=30",
+                "nprobe=35",
+                "nprobe=40",
+                "nprobe=41",
+                "nprobe=42",
+                "nprobe=43",
+                "nprobe=44",
+                "nprobe=45",
+                "nprobe=46",
+                "nprobe=47",
+                "nprobe=48",
+                "nprobe=49",
+                "nprobe=50",
+                "nprobe=55",
+                "nprobe=60",
+                "nprobe=65",
+                "nprobe=70",
+                "nprobe=75",
+                "nprobe=80",
+                "nprobe=85",
+                "nprobe=90",
+                "nprobe=95",
+                "nprobe=100",
+                "nprobe=110",
+                "nprobe=120",
+                "nprobe=130",
+                "nprobe=140",
+                "nprobe=150"
+              ]
+    
+    faiss-HNSW:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "HNSW16,Flat",
+                "efConstruction" : 640
+                }]
+          query-args: |
+              [ "efSearch=70",
+                "efSearch=80",
+                "efSearch=90",
+                "efSearch=100",
+                "efSearch=110",
+                "efSearch=120",
+                "efSearch=130",
+                "efSearch=140",
+                "efSearch=150",
+                "efSearch=160",
+                "efSearch=170",
+                "efSearch=180",
+                "efSearch=190",
+                "efSearch=200",
+                "efSearch=210",
+                "efSearch=220",
+                "efSearch=230",
+                "efSearch=240",
+                "efSearch=250",
+                "efSearch=260",
+                "efSearch=270",
+                "efSearch=280",
+                "efSearch=290",
+                "efSearch=300",
+                "efSearch=310",
+                "efSearch=320",
+                "efSearch=330",
+                "efSearch=340",
+                "efSearch=350",
+                "efSearch=360",
+                "efSearch=370",
+                "efSearch=380",
+                "efSearch=400"
+              ]
+  
+    nmslib-inmem:
+      docker-tag: billion-scale-benchmark-nmslib
+      module: benchmark.algorithms.nmslib_inmem
+      constructor: NmslibHnsw
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"M": 16,"efConstruction": 640, "indexThreadQty":32}]
+          query-args: |
+              [
+                "efSearch=55",
+                "efSearch=60",
+                "efSearch=65",
+                "efSearch=70",
+                "efSearch=75",
+                "efSearch=80",
+                "efSearch=85",
+                "efSearch=90",
+                "efSearch=95",
+                "efSearch=100",
+                "efSearch=105",
+                "efSearch=110",
+                "efSearch=115",
+                "efSearch=120",
+                "efSearch=125",
+                "efSearch=130",
+                "efSearch=135",
+                "efSearch=140",
+                "efSearch=145",
+                "efSearch=150",
+                "efSearch=155",
+                "efSearch=160",
+                "efSearch=165",
+                "efSearch=170",
+                "efSearch=175",
+                "efSearch=180",
+                "efSearch=185",
+                "efSearch=190",
+                "efSearch=195",
+                "efSearch=200",
+                "efSearch=205",
+                "efSearch=210",
+                "efSearch=215",
+                "efSearch=220",
+                "efSearch=225",
+                "efSearch=230",
+                "efSearch=235",
+                "efSearch=240",
+                "efSearch=245",
+                "efSearch=250",
+                "efSearch=255",
+                "efSearch=260",
+                "efSearch=265",
+                "efSearch=270",
+                "efSearch=280",
+                "efSearch=281",
+                "efSearch=282",
+                "efSearch=283",
+                "efSearch=284",
+                "efSearch=285",
+                "efSearch=286",
+                "efSearch=287",
+                "efSearch=288",
+                "efSearch=289",
+                "efSearch=290",
+                "efSearch=291",
+                "efSearch=292",
+                "efSearch=293",
+                "efSearch=294",
+                "efSearch=295",
+                "efSearch=296",
+                "efSearch=300",
+                "efSearch=310",
+                "efSearch=320",
+                "efSearch=330",
+                "efSearch=340",
+                "efSearch=350"]
+
+
+    puck-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"C":1000, "F":1000, "FN":16, "N":96}]
+          query-args: |
+                [ 
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+
+
+                  ]
+
+    puck-flat-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"C":1000, "F":1000, "FN":16, "N":0}]
+          query-args: |
+                [ 
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+                ]
+
+    tinker-inmem-M16:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"index_type":2, "C":1000, "F":1000,"tinker_neighborhood":16,"tinker_construction":600}]
+          query-args: |
+                [
+                  {"search_coarse_count":10, "tinker_search_range": 100},
+                  {"search_coarse_count":10, "tinker_search_range": 200},
+                  {"search_coarse_count":10, "tinker_search_range": 300},
+                  {"search_coarse_count":10, "tinker_search_range": 400},
+                  {"search_coarse_count":10, "tinker_search_range": 500},
+                  {"search_coarse_count":10, "tinker_search_range": 600},
+                  {"search_coarse_count":10, "tinker_search_range": 700},
+                  {"search_coarse_count":10, "tinker_search_range": 800},
+                  {"search_coarse_count":10, "tinker_search_range": 900},
+                  {"search_coarse_count":10, "tinker_search_range": 1000},
+                  {"search_coarse_count":10, "tinker_search_range": 1100},
+                  {"search_coarse_count":10, "tinker_search_range": 1200},
+                  {"search_coarse_count":10, "tinker_search_range": 1300},
+                  {"search_coarse_count":10, "tinker_search_range": 1400}
+                ]
+    
+    #scann has too many params, we use the configuration of https://github.com/erikbern/ann-benchmarks/blob/master/algos.yaml# 
+    #scann-inmem-1:
+    #  docker-tag: billion-scale-benchmark-scann
+    #  module: benchmark.algorithms.scann_inmem
+    #  constructor: Scann
+    #  base-args: ["@metric"]
+    #  run-groups:
+    #    base:
+    #      args: [{"indexkey":[[600], [.nan], [2], ["squared_l2"]]}]
+    #      query-args: |
+    #            [
+    #            [[13, 100]], 
+    #            [[16, 120]], 
+    #            [[20, 140]], 
+    #            [[30, 180]], 
+    #            [[35, 240]],
+ 
+    #            [[35, 300]], 
+    #            [[35, 400]], 
+    #            [[35, 500]], 
+    #            [[35, 600]], 
+    #            [[35, 700]], 
+    #            [[35, 800]], 
+    #            [[35, 900]], 
+
+    #            [[50, 240]], 
+    #            [[50, 300]], 
+    #            [[50, 400]], 
+    #            [[50, 500]], 
+    #            [[50, 600]], 
+    #            [[50, 700]], 
+    #            [[50, 800]], 
+    #            [[50, 900]]
+    #            ]
+    #scann-inmem-2:
+    #  docker-tag: billion-scale-benchmark-scann
+    #  module: benchmark.algorithms.scann_inmem
+    #  constructor: Scann
+    #  base-args: ["@metric"]
+    #  run-groups:
+    #    base:
+    #      args: [{"indexkey":[[2000], [.nan], [4], ["squared_l2"]]}]
+    #      query-args: |
+    #            [
+    #            [[10, 100]], 
+    #            [[15, 140]], 
+    #            [[25, 160]], 
+    #            [[35, 190]], 
+    #            [[40, 200]], 
+    #            [[45, 220]], 
+    #            [[50, 240]], 
+    #            [[60, 250]], 
+    #            [[70, 300]], 
+    #            [[80, 400]], 
+    #            [[100, 500]], 
+    #            [[120, 600]], 
+    #            [[150, 800]], 
+    #            [[200, 900]],
+    #           
+
+    #            [[200, 1000]],
+    #            [[200, 1100]],
+    #            [[200, 1200]],
+    #            [[200, 1300]],
+    #            [[200, 1400]],
+    #            [[200, 1500]],
+    #            [[200, 1600]],
+    #            [[200, 1700]],
+    #            [[200, 1800]],
+    #            [[200, 1900]],
+    #            [[200, 2000]],
+
+
+    #            [[500, 1000]],
+    #            [[500, 1100]],
+    #            [[500, 1200]],
+    #            [[500, 1300]],
+    #            [[500, 1400]],
+    #            [[500, 1500]],
+    #            [[500, 1600]],
+    #            [[500, 1700]],
+    #            [[500, 1800]],
+    #            [[500, 1900]],
+    #            [[500, 2000]],
+
+
+    #            [[1000, 1000]],
+    #            [[1000, 1100]],
+    #            [[1000, 1200]],
+    #            [[1000, 1300]],
+    #            [[1000, 1400]],
+    #            [[1000, 1500]],
+    #            [[1000, 1600]],
+    #            [[1000, 1700]],
+    #            [[1000, 1800]],
+    #            [[1000, 1900]],
+    #            [[1000, 2000]]
+    #            ]
+    #scann-inmem-3:
+    #  docker-tag: billion-scale-benchmark-scann
+    #  module: benchmark.algorithms.scann_inmem
+    #  constructor: Scann
+    #  base-args: ["@metric"]
+    #  run-groups:
+    #    base:
+    #      args: [{"indexkey":[[100], [.nan], [4], ["squared_l2"]]}]
+    #      query-args: |
+    #            [
+    #            [[8, 100]],
+    #            [[8, 200]],
+    #            [[8, 300]],
+    #            [[8, 400]],
+    #            [[8, 500]],
+    #            [[8, 600]],
+    #            [[8, 700]],
+    #            
+
+    #            [[20, 100]],
+    #            [[20, 200]],
+    #            [[20, 300]],
+    #            [[20, 400]],
+    #            [[20, 500]],
+    #            [[20, 600]],
+    #            [[20, 700]],
+    #            
+
+    #            [[50, 100]],
+    #            [[50, 200]],
+    #            [[50, 300]],
+    #            [[50, 400]],
+    #            [[50, 500]],
+    #            [[50, 600]],
+    #            [[50, 700]]
+
+    #            ]
+    vamanapy-1:
+      docker-tag: billion-scale-benchmark-vamanapy
+      module: benchmark.algorithms.diskann_inmem
+      constructor: Vamana
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.2}]
+          query-args: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    
+    vamanapy-2:
+      docker-tag: billion-scale-benchmark-vamanapy
+      module: benchmark.algorithms.diskann_inmem
+      constructor: Vamana
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2}]
+          query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    
+    vamanapy-3:
+      docker-tag: billion-scale-benchmark-vamanapy
+      module: benchmark.algorithms.diskann_inmem
+      constructor: Vamana
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.0}]
+          query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    
+    vamanapy-4:
+      docker-tag: billion-scale-benchmark-vamanapy
+      module: benchmark.algorithms.diskann_inmem
+      constructor: Vamana
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args : [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.0}]
+          query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+                 
+    vamanapy_pq-1:
+      docker-tag: billion-scale-benchmark-vamana_pq
+      module: benchmark.algorithms.diskann_inmem
+      constructor: VamanaPQ
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.2,  'chunks': 96}]
+          query-args: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    
+deep-1B:
+    faiss-t1:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_t1
+      constructor: Faiss
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "OPQ64_128,IVF1048576_HNSW32,PQ64x4fsr",
+                "url": "https://dl.fbaipublicfiles.com/billion-scale-ann-benchmarks/track1_baseline_faiss/deep-1B.IVF1M_2level_PQ64x4fsr.faissindex"
+                }]
+          query-args: |
+              ["nprobe=1,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=8",
+              "nprobe=4,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=16",
+              "nprobe=4,quantizer_efSearch=8",
+              "nprobe=4,quantizer_efSearch=16",
+              "nprobe=8,quantizer_efSearch=4",
+              "nprobe=8,quantizer_efSearch=8",
+              "nprobe=8,quantizer_efSearch=16",
+              "nprobe=8,quantizer_efSearch=32",
+              "nprobe=8,quantizer_efSearch=64",
+              "nprobe=16,quantizer_efSearch=8",
+              "nprobe=16,quantizer_efSearch=16",
+              "nprobe=16,quantizer_efSearch=32",
+              "nprobe=16,quantizer_efSearch=64",
+              "nprobe=16,quantizer_efSearch=128",
+              "nprobe=32,quantizer_efSearch=16",
+              "nprobe=32,quantizer_efSearch=32",
+              "nprobe=32,quantizer_efSearch=64",
+              "nprobe=32,quantizer_efSearch=128",
+              "nprobe=32,quantizer_efSearch=256",
+              "nprobe=64,quantizer_efSearch=16",
+              "nprobe=64,quantizer_efSearch=32",
+              "nprobe=64,quantizer_efSearch=64",
+              "nprobe=64,quantizer_efSearch=128",
+              "nprobe=64,quantizer_efSearch=256",
+              "nprobe=64,quantizer_efSearch=512",
+              "nprobe=128,quantizer_efSearch=32",
+              "nprobe=128,quantizer_efSearch=64",
+              "nprobe=128,quantizer_efSearch=128",
+              "nprobe=128,quantizer_efSearch=256",
+              "nprobe=128,quantizer_efSearch=512",
+              "nprobe=256,quantizer_efSearch=64",
+              "nprobe=256,quantizer_efSearch=128"]
+    puck-t1:
+      docker-tag: billion-scale-benchmark-puck
+      module: benchmark.algorithms.puck_t1
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "C10000_F5000_FN16_N32",
+                "url": "https://gips-test-bucket-0-gz.gz.bcebos.com/similar/deep-1B.puckindex"}]
+          query-args: |
+               [
+                  
+                 "10,20,12000,200",
+                 "10,30,13000,200",
+                 "10,30,14000,200",
+                 "10,30,15000,200",
+                 "10,40,19000,200",
+                 "10,30,20000,300",
+                 "10,30,21000,200",
+                 "10,40,30000,200",
+
+                 "10,90,140000,1100",
+                 "10,100,200000,3000"
+
+               ] 
+
+    
+    
+    diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":100, "L":100, "B":50, "M":110,
+                "url": "https://comp21storage.blob.core.windows.net/publiccontainer/comp21/diskann-T2-baseline-indices/deep-1B/R100_L100_B50_M110"
+                }]
+          query-args: |
+              [{"Ls":30, "BW":4, "T":16},
+              {"Ls":40, "BW":4, "T":16},
+              {"Ls":50, "BW":4, "T":16},
+              {"Ls":53, "BW":4, "T":16},
+              {"Ls":56, "BW":4, "T":16},
+              {"Ls":58, "BW":4, "T":16},
+              {"Ls":60, "BW":4, "T":16},
+              {"Ls":70, "BW":4, "T":16},
+              {"Ls":80, "BW":4, "T":16},
+              {"Ls":100, "BW":4, "T":16}]
+msspacev-1B:
+    faiss-t1:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_t1
+      constructor: Faiss
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "OPQ64_128,IVF1048576_HNSW32,PQ64x4fsr",
+                "url": "https://dl.fbaipublicfiles.com/billion-scale-ann-benchmarks/track1_baseline_faiss/msspacev-1B.IVF1M_2level_PQ64x4fsr.faissindex",
+                "query_bs": 4096
+                }]
+          query-args: |
+              ["nprobe=1,quantizer_efSearch=4",
+              "nprobe=1,quantizer_efSearch=8",
+              "nprobe=1,quantizer_efSearch=16",
+              "nprobe=2,quantizer_efSearch=8",
+              "nprobe=2,quantizer_efSearch=16",
+              "nprobe=4,quantizer_efSearch=16",
+              "nprobe=4,quantizer_efSearch=32",
+              "nprobe=4,quantizer_efSearch=64",
+              "nprobe=8,quantizer_efSearch=32",
+              "nprobe=8,quantizer_efSearch=64",
+              "nprobe=16,quantizer_efSearch=32",
+              "nprobe=8,quantizer_efSearch=128",
+              "nprobe=16,quantizer_efSearch=64",
+              "nprobe=16,quantizer_efSearch=128",
+              "nprobe=32,quantizer_efSearch=64",
+              "nprobe=32,quantizer_efSearch=128",
+              "nprobe=32,quantizer_efSearch=256",
+              "nprobe=64,quantizer_efSearch=128",
+              "nprobe=64,quantizer_efSearch=256",
+              "nprobe=64,quantizer_efSearch=512",
+              "nprobe=128,quantizer_efSearch=128",
+              "nprobe=128,quantizer_efSearch=256",
+              "nprobe=128,quantizer_efSearch=512",
+              "nprobe=256,quantizer_efSearch=256",
+              "nprobe=256,quantizer_efSearch=512"]
+    diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":100, "L":100, "B":47, "M":100,
+                "url": "https://comp21storage.blob.core.windows.net/publiccontainer/comp21/diskann-T2-baseline-indices/msspacev-1B/R100_L100_B47_M100"
+                }]
+          query-args: |
+              [{"Ls":40, "BW":4, "T":16},
+              {"Ls":50, "BW":4, "T":16},
+              {"Ls":60, "BW":4, "T":16},
+              {"Ls":70, "BW":4, "T":16},
+              {"Ls":80, "BW":4, "T":16},
+              {"Ls":90, "BW":4, "T":16},
+              {"Ls":100, "BW":4, "T":16},
+              {"Ls":110, "BW":4, "T":16},
+              {"Ls":120, "BW":4, "T":16},
+              {"Ls":130, "BW":4, "T":16}]
+msturing-1B:
+    faiss-t1:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_t1
+      constructor: Faiss
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "OPQ64_128,IVF1048576_HNSW32,PQ64x4fsr",
+                "url": "https://dl.fbaipublicfiles.com/billion-scale-ann-benchmarks/track1_baseline_faiss/msturing-1B.IVF1M_2level_PQ64x4fsr.faissindex",
+                "query_bs": 4096
+                }]
+          query-args: |  
+              ["nprobe=1,quantizer_efSearch=4",
+              "nprobe=2,quantizer_efSearch=4",
+              "nprobe=1,quantizer_efSearch=8",
+              "nprobe=2,quantizer_efSearch=8",
+              "nprobe=1,quantizer_efSearch=16",
+              "nprobe=2,quantizer_efSearch=16",
+              "nprobe=4,quantizer_efSearch=16",
+              "nprobe=2,quantizer_efSearch=32",
+              "nprobe=4,quantizer_efSearch=32",
+              "nprobe=8,quantizer_efSearch=32",
+              "nprobe=8,quantizer_efSearch=64",
+              "nprobe=16,quantizer_efSearch=64",
+              "nprobe=16,quantizer_efSearch=128",
+              "nprobe=32,quantizer_efSearch=128",
+              "nprobe=32,quantizer_efSearch=256",
+              "nprobe=64,quantizer_efSearch=128",
+              "nprobe=64,quantizer_efSearch=256",
+              "nprobe=128,quantizer_efSearch=128",
+              "nprobe=64,quantizer_efSearch=512",
+              "nprobe=128,quantizer_efSearch=256",
+              "nprobe=128,quantizer_efSearch=512",
+              "nprobe=256,quantizer_efSearch=256",
+              "nprobe=256,quantizer_efSearch=512"]
+
+    puck-t1:
+      docker-tag: billion-scale-benchmark-puck
+      module: benchmark.algorithms.puck_t1
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "C8000_F5000_FN13_N34",
+                "url": "https://gips-test-bucket-0-gz.gz.bcebos.com/similar/msturing-1B.puckindex"}]
+          query-args: |
+               [
+                "10,40,11000,200",
+                "10,60,12000,200",
+                "10,50,13000,200",
+                "10,40,19000,200",
+                "10,60,19000,200",
+                "10,80,19000,600",
+                "10,30,20000,200",
+                "10,50,20000,300",
+                "10,20,22000,300",
+                "10,60,23000,200",
+                "10,70,24000,300",
+                "10,70,25000,300",
+                "10,90,100000,900"]
+
+    diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":100, "L":100, "B":50, "M":80,
+                "url": "https://comp21storage.blob.core.windows.net/publiccontainer/comp21/diskann-T2-baseline-indices/msturing-1B/R100_L100_B50_M80"
+                }]
+          query-args: |
+              [{"Ls":30, "BW":4, "T":16},
+              {"Ls":40, "BW":4, "T":16},
+              {"Ls":50, "BW":4, "T":16},
+              {"Ls":55, "BW":4, "T":16},
+              {"Ls":57, "BW":4, "T":16},
+              {"Ls":59, "BW":4, "T":16},
+              {"Ls":60, "BW":4, "T":16},
+              {"Ls":70, "BW":4, "T":16},
+              {"Ls":80, "BW":4, "T":16},
+              {"Ls":100, "BW":4, "T":16}]
+bigann-1B:
+    faiss-t1:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_t1
+      constructor: Faiss
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "OPQ64_128,IVF1048576_HNSW32,PQ64x4fsr",
+                "url": "https://dl.fbaipublicfiles.com/billion-scale-ann-benchmarks/track1_baseline_faiss/bigann-1B.IVF1M_2level_PQ64x4fsr.faissindex"
+                }]
+          query-args: |
+               ["nprobe=1,quantizer_efSearch=4",
+                "nprobe=2,quantizer_efSearch=4",
+                "nprobe=4,quantizer_efSearch=4",
+                "nprobe=4,quantizer_efSearch=8",
+                "nprobe=8,quantizer_efSearch=4",
+                "nprobe=8,quantizer_efSearch=8",
+                "nprobe=8,quantizer_efSearch=16",
+                "nprobe=8,quantizer_efSearch=32",
+                "nprobe=16,quantizer_efSearch=16",
+                "nprobe=16,quantizer_efSearch=32",
+                "nprobe=16,quantizer_efSearch=64",
+                "nprobe=32,quantizer_efSearch=8",
+                "nprobe=32,quantizer_efSearch=32",
+                "nprobe=32,quantizer_efSearch=64",
+                "nprobe=32,quantizer_efSearch=128",
+                "nprobe=64,quantizer_efSearch=16",
+                "nprobe=64,quantizer_efSearch=32",
+                "nprobe=64,quantizer_efSearch=64",
+                "nprobe=64,quantizer_efSearch=128",
+                "nprobe=64,quantizer_efSearch=256",
+                "nprobe=128,quantizer_efSearch=32",
+                "nprobe=128,quantizer_efSearch=64",
+                "nprobe=128,quantizer_efSearch=128",
+                "nprobe=128,quantizer_efSearch=256",
+                "nprobe=128,quantizer_efSearch=512",
+                "nprobe=256,quantizer_efSearch=64",
+                "nprobe=256,quantizer_efSearch=128",
+                "nprobe=256,quantizer_efSearch=512"] 
+    puck-t1:
+      docker-tag: billion-scale-benchmark-puck
+      module: benchmark.algorithms.puck_t1
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "C10000_F5000_FN16_N32",
+                "url": "https://gips-test-bucket-0-gz.gz.bcebos.com/similar/bigann-1B.puckindex"
+                }]
+          query-args: |
+               [
+                 "10,30,11000,100", 
+                 "10,30,12000,100",
+                 "10,20,13000,200",
+                 "10,30,13000,200",
+                 "10,30,14000,200",
+                 "10,30,15000,100",
+                 "10,30,19000,200",
+                 "10,30,20000,300",
+                 "10,90,200000,1400",
+                 "10,100,230000,1300"
+               ] 
+
+    diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":100, "L":100, "B":50, "M":80,
+                "url": "https://comp21storage.blob.core.windows.net/publiccontainer/comp21/diskann-T2-baseline-indices/bigann-1B/R100_L100_B50_M80"
+                }]
+          query-args: |
+              [{"Ls":30, "BW":4, "T":16},
+              {"Ls":40, "BW":4, "T":16},
+              {"Ls":50, "BW":4, "T":16},
+              {"Ls":55, "BW":4, "T":16},
+              {"Ls":60, "BW":4, "T":16},
+              {"Ls":62, "BW":4, "T":16},
+              {"Ls":65, "BW":4, "T":16},
+              {"Ls":70, "BW":4, "T":16},
+              {"Ls":80, "BW":4, "T":16},
+              {"Ls":100, "BW":4, "T":16}]
+ssnpp-1B:
+    faiss-t1:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_t1
+      constructor: Faiss
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "OPQ32_128,IVF1048576_HNSW32,PQ32",
+              "url": "https://dl.fbaipublicfiles.com/billion-scale-ann-benchmarks/track1_baseline_faiss/ssnpp-1B.IVF1M_2level_PQ32.faissindex"
+                }]
+          query-args: |
+              ["nprobe=1,quantizer_efSearch=4,ht=92",
+              "nprobe=1,quantizer_efSearch=4,ht=98",
+              "nprobe=1,quantizer_efSearch=4,ht=104",
+              "nprobe=1,quantizer_efSearch=4,ht=112",
+              "nprobe=1,quantizer_efSearch=8,ht=96",
+              "nprobe=1,quantizer_efSearch=8,ht=108",
+              "nprobe=1,quantizer_efSearch=16,ht=98",
+              "nprobe=1,quantizer_efSearch=16,ht=114",
+              "nprobe=1,quantizer_efSearch=16,ht=116",
+              "nprobe=1,quantizer_efSearch=32,ht=98",
+              "nprobe=1,quantizer_efSearch=32,ht=110",
+              "nprobe=1,quantizer_efSearch=32,ht=112",
+              "nprobe=1,quantizer_efSearch=32,ht=120",
+              "nprobe=4,quantizer_efSearch=16,ht=256",
+              "nprobe=4,quantizer_efSearch=32,ht=104",
+              "nprobe=4,quantizer_efSearch=32,ht=112",
+              "nprobe=4,quantizer_efSearch=32,ht=256",
+              "nprobe=8,quantizer_efSearch=32,ht=112",
+              "nprobe=4,quantizer_efSearch=64,ht=256",
+              "nprobe=8,quantizer_efSearch=64,ht=116",
+              "nprobe=8,quantizer_efSearch=64,ht=128",
+              "nprobe=16,quantizer_efSearch=32,ht=256",
+              "nprobe=16,quantizer_efSearch=64,ht=118",
+              "nprobe=32,quantizer_efSearch=64,ht=256",
+              "nprobe=64,quantizer_efSearch=256,ht=116",
+              "nprobe=32,quantizer_efSearch=512,ht=256",
+              "nprobe=64,quantizer_efSearch=512,ht=126",
+              "nprobe=256,quantizer_efSearch=256,ht=128"]
+    diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":100, "L":100, "B":60, "M":100, "C":500000, "CM":2,
+                "url": "https://comp21storage.blob.core.windows.net/publiccontainer/comp21/diskann-T2-baseline-indices/fbssnpp-1B/R100_L100_B60_M100"
+                }]
+          query-args: |
+              [{"Lmin":8, "Lmax":10000, "BW":4, "T":16},
+               {"Lmin":12, "Lmax":10000, "BW":4, "T":16},
+               {"Lmin":8, "Lmax":20000, "BW":4, "T":16},
+               {"Lmin":12, "Lmax":20000, "BW":4, "T":16},
+               {"Lmin":8, "Lmax":30000, "BW":4, "T":16},
+               {"Lmin":12, "Lmax":30000, "BW":4, "T":16},
+               {"Lmin":16, "Lmax":30000, "BW":4, "T":16},
+               {"Lmin":8, "Lmax":45000, "BW":4, "T":16},
+               {"Lmin":12, "Lmax":45000, "BW":4, "T":16},
+               {"Lmin":16, "Lmax":45000, "BW":4, "T":16}]
+text2image-1B:
+    faiss-t1:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_t1
+      constructor: Faiss
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "OPQ32_128,IVF1048576_HNSW32,PQ32",
+              "url": "https://dl.fbaipublicfiles.com/billion-scale-ann-benchmarks/track1_baseline_faiss/text2image-1B.IVF1M_2level_PQ32.faissindex"
+                }]
+          # Trying all combinations of nprobe x efSearch
+          query-args: | 
+              ["nprobe=1,quantizer_efSearch=4,ht=106",
+              "nprobe=1,quantizer_efSearch=16,ht=114",
+              "nprobe=1,quantizer_efSearch=16,ht=116",
+              "nprobe=2,quantizer_efSearch=16,ht=110",
+              "nprobe=4,quantizer_efSearch=8,ht=118",
+              "nprobe=4,quantizer_efSearch=32,ht=256",
+              "nprobe=8,quantizer_efSearch=16,ht=114",
+              "nprobe=4,quantizer_efSearch=64,ht=118",
+              "nprobe=4,quantizer_efSearch=64,ht=122",
+              "nprobe=8,quantizer_efSearch=32,ht=116",
+              "nprobe=8,quantizer_efSearch=64,ht=116",
+              "nprobe=8,quantizer_efSearch=64,ht=126",
+              "nprobe=16,quantizer_efSearch=64,ht=256",
+              "nprobe=16,quantizer_efSearch=256,ht=118",
+              "nprobe=16,quantizer_efSearch=512,ht=256",
+              "nprobe=32,quantizer_efSearch=512,ht=128",
+              "nprobe=64,quantizer_efSearch=128,ht=126",
+              "nprobe=128,quantizer_efSearch=512,ht=256",
+              "nprobe=256,quantizer_efSearch=512,ht=120",
+              "nprobe=256,quantizer_efSearch=512,ht=122"]
+    puck-t1:
+      docker-tag: billion-scale-benchmark-puck
+      module: benchmark.algorithms.puck_t1
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "C10000_F5000_FN9_N41",
+                "url": "https://gips-test-bucket-0-gz.gz.bcebos.com/similar/text2image-1B.puckindex"
+                }]
+          query-args: |
+               [
+                 "10,20,10000,1000",
+                 
+                 "10,10,20000,1000",
+                 "10,10,20000,2000",
+                 "10,20,20000,1000",
+                 "10,20,20000,2000",
+                 "10,30,20000,2000",
+                 
+                 "10,20,25000,1000",
+                 "10,30,25000,2000",
+                 
+                 "10,20,30000,2000",
+
+                 "10,40,100000,4000"
+               ] 
+
+    
+    diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":100, "L":100, "B":60, "M":115, "PQ":200, "C":500000, "CM":2,
+                "url": "https://comp21storage.blob.core.windows.net/publiccontainer/comp21/diskann-T2-baseline-indices/text2image-1B/R100_L100_B60_M115_PQ200"
+                }]
+          query-args: |
+              [{"Ls":10, "BW":10, "T":16},
+              {"Ls":20, "BW":10, "T":16},
+              {"Ls":30, "BW":10, "T":16},
+              {"Ls":40, "BW":10, "T":16},
+              {"Ls":50, "BW":10, "T":16},
+              {"Ls":60, "BW":10, "T":16},
+              {"Ls":70, "BW":10, "T":16},
+              {"Ls":80, "BW":10, "T":16},
+              {"Ls":90, "BW":10, "T":16},
+              {"Ls":100, "BW":10, "T":16}]
+ssnpp-10M:
+    faiss-t1:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_t1
+      constructor: Faiss
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "OPQ32_128,IVF65536_HNSW32,PQ32"
+                }]
+          query-args: |
+              ["nprobe=1,quantizer_efSearch=4,ht=92",
+              "nprobe=1,quantizer_efSearch=4,ht=98",
+              "nprobe=1,quantizer_efSearch=4,ht=104",
+              "nprobe=1,quantizer_efSearch=4,ht=112"]
+bigann-10M:
+    faiss-IVF:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+                [{"indexkey": "IVF31622,Flat"
+                }]
+          query-args: |
+              [ 
+                "nprobe=45",
+                "nprobe=50",
+                "nprobe=51",
+                "nprobe=52",
+                "nprobe=53",
+                "nprobe=54",
+                "nprobe=55",
+                "nprobe=56",
+                "nprobe=57",
+                "nprobe=58",
+                "nprobe=59",
+                "nprobe=60",
+                "nprobe=65",
+                "nprobe=70",
+                "nprobe=75",
+                "nprobe=80",
+                "nprobe=85",
+                "nprobe=90",
+                "nprobe=95",
+                "nprobe=100",
+                "nprobe=110",
+                "nprobe=120",
+                "nprobe=130",
+                "nprobe=140",
+                "nprobe=150"
+              ]
+
+    faiss-IVFPQ:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "IVF31622,PQ128"
+                }]
+          query-args: |
+              [ 
+                "nprobe=33",
+                "nprobe=34",
+                "nprobe=35",
+                "nprobe=36",
+                "nprobe=37",
+                "nprobe=38",
+                "nprobe=40",
+                "nprobe=45",
+                "nprobe=50",
+                "nprobe=55",
+                "nprobe=60",
+                "nprobe=65",
+                "nprobe=70",
+                "nprobe=75",
+                "nprobe=80",
+                "nprobe=85",
+                "nprobe=90",
+                "nprobe=95",
+                "nprobe=100",
+                "nprobe=110",
+                "nprobe=120",
+                "nprobe=130",
+                "nprobe=140",
+                "nprobe=150"
+              ]
+    
+    faiss-HNSW:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "HNSW16,Flat",
+                "efConstruction" : 640
+                }]
+          query-args: |
+              [["efSearch=70"],
+                ["efSearch=75"],
+                ["efSearch=80"],
+                ["efSearch=85"],
+                ["efSearch=90"],
+                ["efSearch=95"],
+                ["efSearch=100"],
+                ["efSearch=105"],
+                ["efSearch=110"],
+                ["efSearch=115"],
+                ["efSearch=120"],
+                ["efSearch=125"],
+                ["efSearch=130"],
+                ["efSearch=135"],
+                ["efSearch=140"],
+                ["efSearch=145"],
+                ["efSearch=150"],
+                ["efSearch=155"],
+                ["efSearch=160"],
+                ["efSearch=165"],
+                ["efSearch=170"],
+                ["efSearch=175"],
+                ["efSearch=180"],
+                ["efSearch=185"],
+                ["efSearch=190"],
+                ["efSearch=195"],
+                ["efSearch=200"],
+                ["efSearch=205"],
+                ["efSearch=210"],
+                ["efSearch=215"],
+                ["efSearch=220"],
+                ["efSearch=225"],
+                ["efSearch=230"],
+                ["efSearch=235"],
+                ["efSearch=240"],
+                ["efSearch=245"],
+                ["efSearch=250"],
+                ["efSearch=255"],
+                ["efSearch=260"],
+                ["efSearch=265"],
+                ["efSearch=270"],
+                ["efSearch=280"],
+                ["efSearch=290"],
+                ["efSearch=300"],
+                ["efSearch=310"],
+                ["efSearch=320"],
+                ["efSearch=330"],
+                ["efSearch=340"],
+                ["efSearch=350"],
+                ["efSearch=360"],
+                ["efSearch=370"],
+                ["efSearch=380"],
+                ["efSearch=400"]]
+
+  
+    nmslib-inmem:
+      docker-tag: billion-scale-benchmark-nmslib
+      module: benchmark.algorithms.nmslib_inmem
+      constructor: NmslibHnsw
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"M": 16,"efConstruction": 640, "indexThreadQty":32}]
+          query-args: |
+              [
+                ["efSearch=65"],
+                ["efSearch=70"],
+                ["efSearch=75"],
+                ["efSearch=80"],
+                ["efSearch=85"],
+                ["efSearch=90"],
+                ["efSearch=95"],
+                ["efSearch=100"],
+                ["efSearch=105"],
+                ["efSearch=110"],
+                ["efSearch=115"],
+                ["efSearch=120"],
+                ["efSearch=125"],
+                ["efSearch=130"],
+                ["efSearch=135"],
+                ["efSearch=140"],
+                ["efSearch=145"],
+                ["efSearch=150"],
+                ["efSearch=155"],
+                ["efSearch=160"],
+                ["efSearch=165"],
+                ["efSearch=170"],
+                ["efSearch=175"],
+                ["efSearch=180"],
+                ["efSearch=185"],
+                ["efSearch=190"],
+                ["efSearch=195"],
+                ["efSearch=196"],
+                ["efSearch=197"],
+                ["efSearch=198"],
+                ["efSearch=199"],
+                ["efSearch=200"],
+                ["efSearch=201"],
+                ["efSearch=202"],
+                ["efSearch=203"],
+                ["efSearch=204"],
+                ["efSearch=205"],
+                ["efSearch=210"],
+                ["efSearch=215"],
+                ["efSearch=220"],
+                ["efSearch=225"],
+                ["efSearch=230"],
+                ["efSearch=235"],
+                ["efSearch=240"],
+                ["efSearch=245"],
+                ["efSearch=250"],
+                ["efSearch=255"],
+                ["efSearch=260"],
+                ["efSearch=265"],
+                ["efSearch=270"],
+                ["efSearch=280"],
+                ["efSearch=290"],
+                ["efSearch=300"],
+                ["efSearch=310"],
+                ["efSearch=320"],
+                ["efSearch=330"],
+                ["efSearch=340"],
+                ["efSearch=350"],
+                ["efSearch=360"],
+                ["efSearch=370"],
+                ["efSearch=380"],
+                ["efSearch=400"]]
+
+
+    puck-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"indexkey": "C1000_F1000_FN16_N128", "C":1000, "F":1000, "FN":16, "N":128}]
+          query-args: |
+                [ 
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+                ]
+
+    puck-flat-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"indexkey": "C1000_F1000_FN16_Flat", "C":1000, "F":1000, "FN":16, "N":0}]
+          query-args: |
+                [ 
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+                ]
+
+    tinker-inmem-M16:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"index_type":2,"C":1000, "F":1000,"tinker_neighborhood":16,"tinker_construction":600}]
+          query-args: |
+                [
+                  {"search_coarse_count":10, "tinker_search_range": 100},
+                  {"search_coarse_count":10, "tinker_search_range": 200},
+                  {"search_coarse_count":10, "tinker_search_range": 300},
+                  {"search_coarse_count":10, "tinker_search_range": 400},
+                  {"search_coarse_count":10, "tinker_search_range": 500},
+                  {"search_coarse_count":10, "tinker_search_range": 600},
+                  {"search_coarse_count":10, "tinker_search_range": 700},
+                  {"search_coarse_count":10, "tinker_search_range": 800},
+                  {"search_coarse_count":10, "tinker_search_range": 900},
+                  {"search_coarse_count":10, "tinker_search_range": 1000},
+                  {"search_coarse_count":10, "tinker_search_range": 1100},
+                  {"search_coarse_count":10, "tinker_search_range": 1200},
+                  {"search_coarse_count":10, "tinker_search_range": 1300},
+                  {"search_coarse_count":10, "tinker_search_range": 1400}
+                ]
+    #scann has too many params, we use the configuration of https://github.com/erikbern/ann-benchmarks/blob/master/algos.yaml# 
+    #scann-inmem-1:
+    #  docker-tag: billion-scale-benchmark-scann
+    #  module: benchmark.algorithms.scann_inmem
+    #  constructor: Scann
+    #  base-args: ["@metric"]
+    #  run-groups:
+    #    base:
+    #      args: [{"indexkey":[[600], [.nan], [2], ["squared_l2"]]}]
+    #      query-args: |
+    #            [
+    #            [[4, 40]], 
+    #            [[3, 30]], 
+    #            [[6, 60]], 
+    #            [[8, 74]], 
+    #            [[9, 78]], 
+    #            [[10, 82]], 
+    #            [[11, 85]], 
+    #            [[13, 100]], 
+    #            [[16, 120]], 
+    #            [[20, 140]], 
+    #            [[30, 180]], 
+    #            [[35, 240]],
+ 
+    #            [[35, 300]], 
+    #            [[35, 400]], 
+    #            [[35, 500]], 
+    #            [[35, 600]], 
+    #            [[35, 700]], 
+    #            [[35, 800]], 
+    #            [[35, 900]], 
+
+    #            [[50, 240]], 
+    #            [[50, 300]], 
+    #            [[50, 400]], 
+    #            [[50, 500]], 
+    #            [[50, 600]], 
+    #            [[50, 700]], 
+    #            [[50, 800]], 
+    #            [[50, 900]]
+    #            ]
+    #scann-inmem-2:
+    #  docker-tag: billion-scale-benchmark-scann
+    #  module: benchmark.algorithms.scann_inmem
+    #  constructor: Scann
+    #  base-args: ["@metric"]
+    #  run-groups:
+    #    base:
+    #      args: [{"indexkey":[[2000], [.nan], [4], ["squared_l2"]]}]
+    #      query-args: |
+    #            [
+    #            [[10, 100]], 
+    #            [[15, 140]], 
+    #            [[25, 160]], 
+    #            [[35, 190]], 
+    #            [[40, 200]], 
+    #            [[45, 220]], 
+    #            [[50, 240]], 
+    #            [[60, 250]], 
+    #            [[70, 300]], 
+    #            [[80, 400]], 
+    #            [[100, 500]], 
+    #            [[120, 600]], 
+    #            [[150, 800]], 
+    #            [[200, 900]],
+    #           
+
+    #            [[200, 1000]],
+    #            [[200, 1100]],
+    #            [[200, 1200]],
+    #            [[200, 1300]],
+    #            [[200, 1400]],
+    #            [[200, 1500]],
+    #            [[200, 1600]],
+    #            [[200, 1700]],
+    #            [[200, 1800]],
+    #            [[200, 1900]],
+    #            [[200, 2000]],
+
+
+    #            [[500, 1000]],
+    #            [[500, 1100]],
+    #            [[500, 1200]],
+    #            [[500, 1300]],
+    #            [[500, 1400]],
+    #            [[500, 1500]],
+    #            [[500, 1600]],
+    #            [[500, 1700]],
+    #            [[500, 1800]],
+    #            [[500, 1900]],
+    #            [[500, 2000]],
+
+
+    #            [[1000, 1000]],
+    #            [[1000, 1100]],
+    #            [[1000, 1200]],
+    #            [[1000, 1300]],
+    #            [[1000, 1400]],
+    #            [[1000, 1500]],
+    #            [[1000, 1600]],
+    #            [[1000, 1700]],
+    #            [[1000, 1800]],
+    #            [[1000, 1900]],
+    #            [[1000, 2000]]
+    #            ]
+    #scann-inmem-3:
+    #  docker-tag: billion-scale-benchmark-scann
+    #  module: benchmark.algorithms.scann_inmem
+    #  constructor: Scann
+    #  base-args: ["@metric"]
+    #  run-groups:
+    #    base:
+    #      args: [{"indexkey":[[100], [.nan], [4], ["squared_l2"]]}]
+    #      query-args: |
+    #            [
+    #            [[2, 20]], 
+    #            [[3, 20]], 
+    #            [[3, 30]], 
+    #            [[4, 30]], 
+    #            [[5, 40]], 
+    #            [[8, 80]],
+    #            
+    #            [[8, 100]],
+    #            [[8, 200]],
+    #            [[8, 300]],
+    #            [[8, 400]],
+    #            [[8, 500]],
+    #            [[8, 600]],
+    #            [[8, 700]],
+    #            
+
+    #            [[20, 100]],
+    #            [[20, 200]],
+    #            [[20, 300]],
+    #            [[20, 400]],
+    #            [[20, 500]],
+    #            [[20, 600]],
+    #            [[20, 700]],
+    #            
+
+    #            [[50, 100]],
+    #            [[50, 200]],
+    #            [[50, 300]],
+    #            [[50, 400]],
+    #            [[50, 500]],
+    #            [[50, 600]],
+    #            [[50, 700]]
+
+    #            ]
+
+#
+#   diskann-t2:
+#      docker-tag: billion-scale-benchmark-diskann
+#      module: benchmark.algorithms.diskann-t2
+#      constructor: Diskann
+#      base-args: ["@metric"]
+#      run-groups:
+#        base:
+#          args: |
+#              [{"R":100, "L":100, "B":0.3, "M":15}]
+#          query-args: |
+#              [{"Ls":50, "BW":4, "T":16}]
+#
+
+
+bigann-100M:
+    faiss-IVF:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+                [{"indexkey": "IVF100000,Flat"
+                }]
+          query-args: |
+              [ 
+                "nprobe=40",
+                "nprobe=45",
+                "nprobe=50",
+                "nprobe=55",
+                "nprobe=60",
+                "nprobe=65",
+                "nprobe=70",
+                "nprobe=75",
+                "nprobe=80",
+                "nprobe=85",
+                "nprobe=90",
+                "nprobe=95",
+                "nprobe=100",
+                "nprobe=110",
+                "nprobe=120",
+                "nprobe=130",
+                "nprobe=140",
+                "nprobe=150"
+              ]
+
+    faiss-IVFPQ:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "IVF100000,PQ128"
+                }]
+          query-args: |
+              [ 
+                "nprobe=40",
+                "nprobe=45",
+                "nprobe=50",
+                "nprobe=55",
+                "nprobe=60",
+                "nprobe=65",
+                "nprobe=70",
+                "nprobe=75",
+                "nprobe=80",
+                "nprobe=85",
+                "nprobe=90",
+                "nprobe=95",
+                "nprobe=100",
+                "nprobe=110",
+                "nprobe=120",
+                "nprobe=130",
+                "nprobe=140",
+                "nprobe=150"
+              ]
+    
+    faiss-HNSW:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "HNSW32,Flat",
+                "efConstruction" : 640
+                }]
+          query-args: |
+              [ "efSearch=70",
+                "efSearch=80",
+                "efSearch=90",
+                "efSearch=100",
+                "efSearch=110",
+                "efSearch=120",
+                "efSearch=130",
+                "efSearch=140",
+                "efSearch=150",
+                "efSearch=160",
+                "efSearch=170",
+                "efSearch=180",
+                "efSearch=190",
+                "efSearch=200",
+                "efSearch=210",
+                "efSearch=220",
+                "efSearch=230",
+                "efSearch=240",
+                "efSearch=250",
+                "efSearch=260",
+                "efSearch=270",
+                "efSearch=280",
+                "efSearch=290",
+                "efSearch=300",
+                "efSearch=310",
+                "efSearch=320",
+                "efSearch=330",
+                "efSearch=340",
+                "efSearch=350",
+                "efSearch=360",
+                "efSearch=370",
+                "efSearch=380",
+                "efSearch=400"
+              ]
+  
+    nmslib-inmem:
+      docker-tag: billion-scale-benchmark-nmslib
+      module: benchmark.algorithms.nmslib_inmem
+      constructor: NmslibHnsw
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"M": 32,"efConstruction": 640, "indexThreadQty":32}]
+          query-args: |
+              [["efSearch=70"],
+                ["efSearch=80"],
+                ["efSearch=90"],
+                ["efSearch=100"],
+                ["efSearch=110"],
+                ["efSearch=120"],
+                ["efSearch=130"],
+                ["efSearch=140"],
+                ["efSearch=150"],
+                ["efSearch=160"],
+                ["efSearch=170"],
+                ["efSearch=180"],
+                ["efSearch=190"],
+                ["efSearch=200"],
+                ["efSearch=210"],
+                ["efSearch=220"],
+                ["efSearch=230"],
+                ["efSearch=240"],
+                ["efSearch=250"],
+                ["efSearch=260"],
+                ["efSearch=270"],
+                ["efSearch=280"],
+                ["efSearch=290"],
+                ["efSearch=300"],
+                ["efSearch=310"],
+                ["efSearch=320"],
+                ["efSearch=330"],
+                ["efSearch=340"],
+                ["efSearch=350"],
+                ["efSearch=360"],
+                ["efSearch=370"],
+                ["efSearch=380"],
+                ["efSearch=400"]]
+
+    puck-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"indexkey": "C3000_F3000_FN16_N128", "C":3000, "F":3000, "FN":16, "N":128}]
+          query-args: |
+              [
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+              ]
+
+    puck-flat-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"indexkey": "C3000_F3000_FN16_Flat", "C":3000, "F":3000, "FN":16, "N":0}]
+          query-args: |
+              [
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+              ]
+    tinker-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"index_type":2,"C":3000, "F":3000,"tinker_neighborhood":10,"tinker_construction":600}]
+          query-args: |
+                [
+                  {"search_coarse_count":10, "tinker_search_range": 100},
+                  {"search_coarse_count":10, "tinker_search_range": 200},
+                  {"search_coarse_count":10, "tinker_search_range": 300},
+                  {"search_coarse_count":10, "tinker_search_range": 400},
+                  {"search_coarse_count":10, "tinker_search_range": 500},
+                  {"search_coarse_count":10, "tinker_search_range": 600},
+                  {"search_coarse_count":10, "tinker_search_range": 700},
+                  {"search_coarse_count":10, "tinker_search_range": 800},
+                  {"search_coarse_count":10, "tinker_search_range": 900},
+                  {"search_coarse_count":10, "tinker_search_range": 1000},
+                  {"search_coarse_count":10, "tinker_search_range": 1100},
+                  {"search_coarse_count":10, "tinker_search_range": 1200},
+                  {"search_coarse_count":10, "tinker_search_range": 1300},
+                  {"search_coarse_count":10, "tinker_search_range": 1400}
+                ]
+    vamanapy-1:
+      docker-tag: billion-scale-benchmark-vamanapy
+      module: benchmark.algorithms.diskann_inmem
+      constructor: Vamana
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.2}]
+          query-args: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    
+    vamanapy-2:
+      docker-tag: billion-scale-benchmark-vamanapy
+      module: benchmark.algorithms.diskann_inmem
+      constructor: Vamana
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.2}]
+          query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    
+    vamanapy-3:
+      docker-tag: billion-scale-benchmark-vamanapy
+      module: benchmark.algorithms.diskann_inmem
+      constructor: Vamana
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args : [{'l_build': 125, 'max_outdegree': 32, 'alpha': 1.0}]
+          query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    
+    vamanapy-4:
+      docker-tag: billion-scale-benchmark-vamanapy
+      module: benchmark.algorithms.diskann_inmem
+      constructor: Vamana
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args : [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.0}]
+          query-args : [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+                 
+    vamanapy_pq-1:
+      docker-tag: billion-scale-benchmark-vamana_pq
+      module: benchmark.algorithms.diskann_inmem
+      constructor: VamanaPQ
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.2,  'chunks': 96}]
+          query-args: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
+    
+
+deep-100M:
+    faiss-IVF:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+                [{"indexkey": "IVF100000,Flat"
+                }]
+          query-args: |
+              [ 
+                "nprobe=30",
+                "nprobe=35",
+                "nprobe=40",
+                "nprobe=45",
+                "nprobe=50",
+                "nprobe=55",
+                "nprobe=60",
+                "nprobe=65",
+                "nprobe=70",
+                "nprobe=75",
+                "nprobe=80",
+                "nprobe=85",
+                "nprobe=90",
+                "nprobe=95",
+                "nprobe=100",
+                "nprobe=110",
+                "nprobe=120",
+                "nprobe=130",
+                "nprobe=140",
+                "nprobe=150"
+              ]
+
+    faiss-IVFPQ:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "IVF100000,PQ96"
+                }]
+          query-args: |
+              [ 
+                "nprobe=30",
+                "nprobe=35",
+                "nprobe=40",
+                "nprobe=45",
+                "nprobe=50",
+                "nprobe=55",
+                "nprobe=60",
+                "nprobe=65",
+                "nprobe=70",
+                "nprobe=75",
+                "nprobe=80",
+                "nprobe=85",
+                "nprobe=90",
+                "nprobe=95",
+                "nprobe=100",
+                "nprobe=110",
+                "nprobe=120",
+                "nprobe=130",
+                "nprobe=140",
+                "nprobe=150"
+              ]
+    
+    faiss-HNSW:
+      docker-tag: billion-scale-benchmark-faissconda
+      module: benchmark.algorithms.faiss_inmem
+      constructor: FaissFactory
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"indexkey": "HNSW32,Flat",
+                "efConstruction" : 640
+                }]
+          query-args: |
+              [ "efSearch=70",
+                "efSearch=80",
+                "efSearch=90",
+                "efSearch=100",
+                "efSearch=110",
+                "efSearch=120",
+                "efSearch=130",
+                "efSearch=140",
+                "efSearch=150",
+                "efSearch=160",
+                "efSearch=170",
+                "efSearch=180",
+                "efSearch=190",
+                "efSearch=200",
+                "efSearch=210",
+                "efSearch=220",
+                "efSearch=230",
+                "efSearch=240",
+                "efSearch=250",
+                "efSearch=260",
+                "efSearch=270",
+                "efSearch=280",
+                "efSearch=290",
+                "efSearch=300",
+                "efSearch=310",
+                "efSearch=320",
+                "efSearch=330",
+                "efSearch=340",
+                "efSearch=350",
+                "efSearch=360",
+                "efSearch=370",
+                "efSearch=380",
+                "efSearch=400"
+              ]
+  
+    nmslib-inmem:
+      docker-tag: billion-scale-benchmark-nmslib
+      module: benchmark.algorithms.nmslib_inmem
+      constructor: NmslibHnsw
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"M": 32,"efConstruction": 640, "indexThreadQty":32}]
+          query-args: |
+              [["efSearch=70"],
+                ["efSearch=80"],
+                ["efSearch=90"],
+                ["efSearch=100"],
+                ["efSearch=110"],
+                ["efSearch=120"],
+                ["efSearch=130"],
+                ["efSearch=140"],
+                ["efSearch=150"],
+                ["efSearch=160"],
+                ["efSearch=170"],
+                ["efSearch=180"],
+                ["efSearch=190"],
+                ["efSearch=200"],
+                ["efSearch=210"],
+                ["efSearch=220"],
+                ["efSearch=230"],
+                ["efSearch=240"],
+                ["efSearch=250"],
+                ["efSearch=260"],
+                ["efSearch=270"],
+                ["efSearch=280"],
+                ["efSearch=290"],
+                ["efSearch=300"],
+                ["efSearch=310"],
+                ["efSearch=320"],
+                ["efSearch=330"],
+                ["efSearch=340"],
+                ["efSearch=350"],
+                ["efSearch=360"],
+                ["efSearch=370"],
+                ["efSearch=380"],
+                ["efSearch=400"]]
+
+    puck-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"indexkey": "C3000_F3000_FN16_N96", "C":3000, "F":3000, "FN":16, "N":96}]
+          query-args: |
+              [
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+                ]
+
+    puck-flat-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"indexkey": "C3000_F3000_FN16_Flat", "C":3000, "F":3000, "FN":16, "N":0}]
+          query-args: |
+              [
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.0, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.05, "filter_topk": 1000},
+
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 200},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 300},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 400},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 500},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 600},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 700},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 800},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 900},
+                  {"search_coarse_count":100, "radius_rate":1.1, "filter_topk": 1000}
+              ]
+    tinker-inmem:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"index_type":2,"C":3000, "F":3000,"tinker_neighborhood":16,"tinker_construction":600}]
+          query-args: |
+                [
+                  {"search_coarse_count":10, "tinker_search_range": 100},
+                  {"search_coarse_count":10, "tinker_search_range": 200},
+                  {"search_coarse_count":10, "tinker_search_range": 300},
+                  {"search_coarse_count":10, "tinker_search_range": 400},
+                  {"search_coarse_count":10, "tinker_search_range": 500},
+                  {"search_coarse_count":10, "tinker_search_range": 600},
+                  {"search_coarse_count":10, "tinker_search_range": 700},
+                  {"search_coarse_count":10, "tinker_search_range": 800},
+                  {"search_coarse_count":10, "tinker_search_range": 900},
+                  {"search_coarse_count":10, "tinker_search_range": 1000},
+                  {"search_coarse_count":10, "tinker_search_range": 1100},
+                  {"search_coarse_count":10, "tinker_search_range": 1200},
+                  {"search_coarse_count":10, "tinker_search_range": 1300},
+                  {"search_coarse_count":10, "tinker_search_range": 1500}
+                ]
+    
+msturing-1M:
+   diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":50, "L":50, "B":0.03, "M":1}]
+          query-args: |
+              [{"Ls":50, "BW":4, "T":16}]
+msspacev-1M:
+   diskann-t2:
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":50, "L":50, "B":0.03, "M":1}]
+          query-args: |
+              [{"Ls":50, "BW":4, "T":16}]
+text2image-1M:
+   diskann-t2: 
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":50, "L":50, "B":0.03, "M":1, "PQ":200}]
+          query-args: |
+              [{"Ls":50, "BW":4, "T":16}]
+
+text2image-10M:
+   diskann-t2: 
+      docker-tag: billion-scale-benchmark-diskann
+      module: benchmark.algorithms.diskann-t2
+      constructor: Diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+              [{"R":50, "L":50, "B":0.3, "M":10, "PQ":200}]
+          query-args: |
+              [{"Ls":50, "BW":4, "T":16}]
+
+
+search-vip-300w:
+    #brute-force:
+    #  docker-tag: billion-scale-benchmark-faissconda
+    #  module: benchmark.algorithms.faiss_inmem
+    #  constructor: FaissIndexFlat
+    #  base-args: ["@metric"]
+    #  run-groups:
+    #    base:
+    #      args: [{"indexkey": "Flat"}]
+    #      query-args: |
+    #          []
+    nmslib-inmem:
+      docker-tag: billion-scale-benchmark-nmslib
+      module: benchmark.algorithms.nmslib_inmem
+      constructor: NmslibHnsw
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"M": 54,"efConstruction": 200, "indexThreadQty":64}]
+          query-args: |
+              [
+                "efSearch=50",
+                "efSearch=55",
+                "efSearch=60",
+                "efSearch=65",
+                "efSearch=70",
+                "efSearch=75"  ]
+
+    tinker-inmem-M16:
+      docker-tag: billion-scale-benchmark-puck_inmem
+      module: benchmark.algorithms.puck_inmem
+      constructor: Puck
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [{"index_type":2, "C":200, "F":200,"tinker_neighborhood":16,"tinker_construction":600}]
+          query-args: |
+                [
+                  {"search_coarse_count":10, "tinker_search_range": 95},
+                  {"search_coarse_count":10, "tinker_search_range": 96},
+                  {"search_coarse_count":10, "tinker_search_range": 97},
+                  {"search_coarse_count":10, "tinker_search_range": 98},
+                  {"search_coarse_count":10, "tinker_search_range": 99},
+                  {"search_coarse_count":10, "tinker_search_range": 100},
+                  {"search_coarse_count":10, "tinker_search_range": 102},
+                  {"search_coarse_count":10, "tinker_search_range": 104},
+                  {"search_coarse_count":10, "tinker_search_range": 106},
+                  {"search_coarse_count":10, "tinker_search_range": 108},
+                  {"search_coarse_count":10, "tinker_search_range": 110}
+                ]
