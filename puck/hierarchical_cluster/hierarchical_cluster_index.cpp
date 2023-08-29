@@ -98,9 +98,11 @@ bool check_file_length_info(const std::string& file_name,
 
     if (fd == -1 || -1 == fstat(fd, &st) || (file_length != (uint64_t)st.st_size)) {
         LOG(ERROR) << "check file length has error, file name = " << file_name;
+        close(fd);
         return false;
     }
 
+    close(fd);
     return true;
 }
 

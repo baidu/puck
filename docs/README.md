@@ -22,7 +22,7 @@ ANN的检索性能是重中之重，PUCK设计并实现了多种优化方案，�
 方案：经过不断尝试，我们提出了Tinker算法，Tinker的最终效果大大超出了最初预期,在benchmark上表现优异
 
 ## 比赛获奖情况
-首&ensp;&ensp;&ensp;&ensp;届国际向量检索大赛BigANN是由人工智能领域全球顶级学术会议NeurIPS发起，由微软、facebook等公司协办，是全球最高水平的赛事，旨在提升大规模ANN的研究创新和生产环境中的落地应用。虽是首届大赛，但因NeurIPS的极高知名度和权威性，吸引了众多知名企业和顶尖大学的同台竞技。本届比赛已于2021年12月NeurlPS’21会议期间公布结果       
+&ensp;&ensp;&ensp;&ensp;首届国际向量检索大赛BigANN是由人工智能领域全球顶级学术会议NeurIPS发起，由微软、facebook等公司协办，是全球最高水平的赛事，旨在提升大规模ANN的研究创新和生产环境中的落地应用。虽是首届大赛，但因NeurIPS的极高知名度和权威性，吸引了众多知名企业和顶尖大学的同台竞技。本届比赛已于2021年12月NeurlPS’21会议期间公布结果       
 Puck在参赛的四个数据集中均排名第一
            比赛详情：https://big-ann-benchmarks.com/neurips21.html
            比赛结果：https://github.com/harsha-simhadri/big-ann-benchmarks/tree/main/t1_t2 
@@ -223,3 +223,9 @@ int search(const Request* request, Response* response);
 **/
 int insert(const InsertRequest);
 ````
+
+# 技术交流
+QQ群（Puck技术交流群）：913964818
+
+![QQ Group](PuckQQGroup.jpeg)
+

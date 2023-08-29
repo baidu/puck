@@ -96,3 +96,8 @@ Please see [this readme](./ann-benchmarks/README.md) for details.
 this ann-benchmark is forked from https://github.com/harsha-simhadri/big-ann-benchmarks of 2021.
 
 How to run this benchmark is the same with it. We add support of faiss(IVF,IVF-Flat,HNSW) , nmslib（HNSW）,Puck and Tinker of T1 track. And We update algos.yaml of these method using recommended parameters of 4 datasets(bigann-10M, bigann-100M, deep-10M, deep-100M)
+
+## Discussion
+Join our QQ group if you are interested in this project.
+
+![QQ Group](./docs/PuckQQGroup.jpeg)
