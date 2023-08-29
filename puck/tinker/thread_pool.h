@@ -38,7 +38,7 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn
         }
     } else {
         std::vector<std::thread>  threads;
-        std::atomic<size_t>       current(0);
+        //std::atomic<size_t>       current(0);
 
         // keep track of exceptions in threads
         // https://stackoverflow.com/a/32428427/1713196
@@ -50,8 +50,8 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn
             threads.push_back(std::thread([&, threadId] {
                 //size_t thread_id = current.fetch_add(1);
                 size_t thread_id = threadId;
-                int id = std::max(thread_id * avg_cnt, start);
-                int cur_end = std::min((thread_id + 1) * avg_cnt, end);
+                int id = thread_id * avg_cnt + start;
+                int cur_end = std::min((thread_id + 1) * avg_cnt + start, end);
                 LOG(INFO) << "threadId = " << threadId << " [" << id << ", " << cur_end << "]";
 
                 while (true) {
@@ -71,7 +71,6 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn
                          * before the increment (what will result in overflow
                          * and produce 0 instead of current + 1).
                          */
-                        current = end;
                         break;
                     }
                 }
