@@ -19,7 +19,7 @@ Docker version ：1.12.5<p>
 - 建库CPU : 系统CPU核数，建库内存：160G;
 <p>
 
-##### 注：Faiss建库过程中，会使用OMP并行加速且未指定并发个数，默认会使用系统CPU核数。其他算法与其打平，不限制建库并发度。Faiss检索过程中，倒排相关（IVF-*）算法中OMP并发度可通过设置omp_set_num_threads指定，Faiss-HNSW未指定并发个数需要在外部调度过程中控制并发度；Nmslib可通过传入indexThreadQty指定；Puck可通过修改gflags参数gnoimi_context_initial_pool_size的值指定。
+##### 注：Faiss建库过程中，会使用OMP并行加速且未指定并发个数，默认会使用系统CPU核数。其他算法与其打平，不限制建库并发度。Faiss检索过程中，倒排相关（IVF-*）算法中OMP并发度可通过设置omp_set_num_threads指定，Faiss-HNSW未指定并发个数需要在外部调度过程中控制并发度；Nmslib可通过传入indexThreadQty指定；Puck可通过修改gflags参数context_initial_pool_size的值指定。
 <br>
 
 # 对标数据集
@@ -75,7 +75,7 @@ Docker version ：1.12.5<p>
 
 [Tinker](https://github.com/baidu/puck)：
 
-- Tinker：百度内容技术部自研图结构检索算法
+- Tinker：百度内容技术部自研检索算法
 
 <p>
 
@@ -105,7 +105,7 @@ Docker version ：1.12.5<p>
 #### 结论
 <p>
 
-&ensp;&ensp;&ensp;&ensp;在十亿级别超大规模数据集上，PUCK在四个数据集上的性能均获第一。
+&ensp;&ensp;&ensp;&ensp;在十亿级别超大规模数据集上，Puck在四个数据集上的性能均获第一。
 
 <p>
 
@@ -133,7 +133,7 @@ Docker version ：1.12.5<p>
 <p>
 
 &ensp;&ensp;&ensp;&ensp;对于亿级别数据集，内存成为HNSW的瓶颈。Faiss版本的HNSW在160G内存限制下，建库不受影响，但加载索引时，因内存超限导致加载失败。Nmslib版本的HNSW在建库时就遇到了内存超限的问题。
-Tinker有着绝对的性能优势，内存低于Nmslib，高于Puck；当QPS=1W时候，召回率远高于其他算法；Recall=0.90时，吞吐达到了puck的160%。Puck和Puck-Fla的性能高于除tinker外的其他算法，内存上puck有优势。
+Tinker有着绝对的性能优势，内存低于Nmslib，高于Puck；当QPS=1W时候，召回率远高于其他算法；Recall=0.90时，吞吐达到了Puck的160%。Puck和Puck-Flat的性能高于除Tinker外的其他算法，内存上Puck有优势。
 
 <p>
 
@@ -160,7 +160,7 @@ Tinker有着绝对的性能优势，内存低于Nmslib，高于Puck；当QPS=1W�
 #### 结论
 <p>
 
-&ensp;&ensp;&ensp;&ensp;与Deep-10M的性能表现基本一致，tinker吞吐上优势明显；puck性能仅次于tinker，在内存上占优。
+&ensp;&ensp;&ensp;&ensp;与Deep-10M的性能表现基本一致，Tinker吞吐上优势明显；Puck性能仅次于Tinker，在内存上占优。
 
 <p>
 
@@ -187,8 +187,8 @@ Tinker有着绝对的性能优势，内存低于Nmslib，高于Puck；当QPS=1W�
 #### 结论
 <p>
 
-&ensp;&ensp;&ensp;&ensp;Tinker有着绝对的性能优势，内存高于puck，低于Nmslib。当QPS=1W时候，召回率远高于其他算法。Recall=0.95时，tinker吞吐是puck的142%，是nmslib的233%。Puck吞吐是nmslib的164%。
-Puck和Puck-Flat的QPS优于除tinker外其他算法。
+&ensp;&ensp;&ensp;&ensp;Tinker有着绝对的性能优势，内存高于Puck，低于Nmslib。当QPS=1W时候，召回率远高于其他算法。Recall=0.95时，Tinker吞吐是Puck的142%，是Nmslib的233%。Puck吞吐是Nmslib的164%。
+Puck和Puck-Flat的QPS优于除Tinker外其他算法。
 Faiss-IVF性能受数据集分布影响较大，在Deep-10M数据集上，召回率 <87%时，Faiss-IVF优于Nmslib，且性能优势较为明显。
 相比Faiss-HNSW，Nmslib版本的HNSW在性能上优势更明显。
 
@@ -217,15 +217,15 @@ Faiss-IVF性能受数据集分布影响较大，在Deep-10M数据集上，召回
 #### 结论
 <p>
 
-&ensp;&ensp;&ensp;&ensp;Tinker有着绝对的性能优势，内存低于Nmslib，高于puck。当QPS=1W时候，召回率远高于其他算法。Recall=0.95时，tinker吞吐是puck的127%，是nmslib的213%。Puck吞吐是nmslib的167%。
-Puck和Puck-Flat的QPS均优于faiss和nmslib，性能优势明显。数据分布对Puck影响相对较小，在两个数据集中，Puck性能表现稳定。
+&ensp;&ensp;&ensp;&ensp;Tinker有着绝对的性能优势，内存低于Nmslib，高于Puck。当QPS=1W时候，召回率远高于其他算法。Recall=0.95时，Tinker吞吐是puck的127%，是Nmslib的213%。Puck吞吐是Nmslib的167%。
+Puck和Puck-Flat的QPS均优于Faiss和Nmslib，性能优势明显。数据分布对Puck影响相对较小，在两个数据集中，Puck性能表现稳定。
 在Bigann-10M数据集上，召回率 >80%时，Faiss-IVF性能表现不如Nmslib。
 <p>
 
 ## 总结
 <p>
 
-&ensp;&ensp;&ensp;&ensp;终上所述，Tinker有着绝对的性能优势，内存使用上大于Puck, 小于Nmslib；如果你的应用不是内存瓶颈，重点在计算上，请大胆使用tinker；  当在大规模数据集上，内存成为瓶颈时，Puck具备了更多优势，表现远优于Faiss-IVF和Faiss-IVFPQ，随着数据规模越大，Puck优势越明显。
+&ensp;&ensp;&ensp;&ensp;终上所述，Tinker有着绝对的性能优势，内存使用上大于Puck, 小于Nmslib；如果你的应用不是内存瓶颈，重点在计算上，请大胆使用Tinker；  当在大规模数据集上，内存成为瓶颈时，Puck具备了更多优势，表现远优于Faiss-IVF和Faiss-IVFPQ，随着数据规模越大，Puck优势越明显。
 <p>
 
 # benchmark实验复现方法
