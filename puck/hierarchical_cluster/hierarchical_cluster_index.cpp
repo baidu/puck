@@ -98,9 +98,10 @@ bool check_file_length_info(const std::string& file_name,
 
     if (fd == -1 || -1 == fstat(fd, &st) || (file_length != (uint64_t)st.st_size)) {
         LOG(ERROR) << "check file length has error, file name = " << file_name;
+        close(fd);
         return false;
     }
-
+    close(fd);
     return true;
 }
 
@@ -111,6 +112,7 @@ int write_fvec_format(const char* file_name, const uint32_t dim, const uint64_t 
 
     if (!out_fvec_init) {
         LOG(ERROR) << "cannot open " << file_name << " for writing";
+        fclose(out_fvec_init);
         return -1;
     }
 
@@ -995,6 +997,7 @@ int HierarchicalClusterIndex::build() {
         return -1;
     }
 
+
     //从文件获取配置信息
     if (init_model_memory() != 0) {
         LOG(INFO) << "init_model_memory error";
@@ -1190,7 +1193,7 @@ void HierarchicalClusterIndex::batch_assign(const uint32_t total_cnt, const std:
             _fine_norms[j] = 0 - std::sqrt(_fine_norms[j]);
         }
     }
-
+    
     //线程个数由gflags参数threads_count指定，默认等于CPU核数
     for (uint32_t threadId = 0; threadId < _conf.threads_count; ++threadId) {
         threads.push_back(std::thread([&, threadId] {
@@ -1344,16 +1347,18 @@ int HierarchicalClusterIndex::check_feature_dim() {
     uint32_t feature_dim;
 
     if (read(fd, (char*)&feature_dim, sizeof(uint32_t)) < 0) {
+        close(fd);
         LOG(ERROR) << "read file " << _conf.feature_file_name << " error.";
         return -1;
     }
 
     if (feature_dim != _conf.feature_dim) {
+        close(fd);
         LOG(ERROR) << "feature_dim of file " << _conf.feature_file_name << " is " << feature_dim <<
                    ", feature_dim in GFLAGS is  _conf.feature_dim";
         return -1;
     }
-
+    close(fd);
     _conf.total_point_count = st.st_size / per_point_len;
     return 0;
 }

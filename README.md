@@ -46,7 +46,6 @@ cd puck
 cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3 -c "import sysconfig; print(sysconfig.get_path('include'))")  \
     -DPYTHON_LIBRARY=$(python3 -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))") \
     -DMKLROOT=${MKLROOT} \
-    -DUSE_PYTHON=ON \
     -DBLA_VENDOR=Intel10_64lp_seq \
     -DBLA_STATIC=ON  \
     -B build .

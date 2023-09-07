@@ -1,8 +1,8 @@
 # 序言
 
 &ensp;&ensp;&ensp;&ensp;在ANN检索领域，大规模相似搜索项目Faiss和ann-benchmarks等都对一些主流检索算法做过对比。本节分别使用千万、亿级、十亿级的公开数据集，对比Puck/Tinker与Faiss、Nmslib等开源框架在效果和性能上的差异。<p>
-&ensp;&ensp;&ensp;&ensp;FAISS是由Facebook AI Research研发，为稠密向量提供高效相似度搜索和类聚的框架，为目前业内应用最广的ANN框架。Faiss实现了多种检索算法，包括IndexFlat(暴力搜索)、IndexHNSWFlat、IndexHNSWPQ、IVFFlat、IVFPQ、IndexLSH和IndexPQ等。<p>
-&ensp;&ensp;&ensp;&ensp;相比与学术研究，在工业上更关注于召回率、单机吞吐、内存及是否支持实时增删。随着数据规模的不断增大，对检索算法提出了更高的要求。IndexFlat复杂度太高，并不适用于工业生产环境，IndexLSH适用于中小规模数据集，IndexIVFPQ是IndexPQ的一个加速版本，加速原理为：对原始特征空间进行分割为多个子空间，在检索过程中，快速锁定某几个子空间，在这些子空间内进行遍历。最终选取Faiss库中业内影响力较高的IVFFlat、IVFPQ和HNSWFlat与Puck进行对比。HNSW算法与上述算法不同，是一种全新的基于图结构的检索算法。当前业内有多个实现版本，根据[ann-benchmarks](https://ann-benchmarks.com/)对标结果显示，Nmslib版本性能最好，故把Nmslib版本也加入此次对标算法中。
+&ensp;&ensp;&ensp;&ensp;Faiss是由Facebook AI Research研发，为稠密向量提供高效相似度搜索和类聚的框架，为目前业内应用最广的ANN框架。Faiss实现了多种检索算法，包括IndexFlat(暴力搜索)、IndexHNSWFlat、IndexHNSWPQ、IVFFlat、IVFPQ、IndexLSH和IndexPQ等。<p>
+&ensp;&ensp;&ensp;&ensp;相比与学术研究，在工业上更关注于召回率、单机吞吐、内存占用以及是否支持各种附加功能，比如实时插入、带tag的检索等。随着数据规模的不断增大，对检索算法提出了更高的要求。IndexFlat复杂度太高，并不适用于工业生产环境，IndexLSH适用于中小规模数据集，IndexIVFPQ是IndexPQ的一个加速版本，加速原理为：对原始特征空间进行分割为多个子空间，在检索过程中，快速锁定某几个子空间，在这些子空间内进行遍历。最终选取Faiss库中业内影响力较高的IVFFlat、IVFPQ和HNSWFlat与Puck进行对比。HNSW算法与上述算法不同，是一种全新的基于图结构的检索算法。当前业内有多个实现版本，根据[ann-benchmarks](https://ann-benchmarks.com/)对标结果显示，Nmslib版本性能最好，故把Nmslib版本也加入此次对标算法中。
 
 # benchmark 详细介绍
 &ensp;&ensp;&ensp;&ensp;为了能方便的支持公司内各种场景和算法的比对，我们以[Billion-Scale Approximate Nearest Neighbor Search Challenge: NeurIPS'21 competition track](https://big-ann-benchmarks.com/neurips21.html)的[big-ann-benchmarks](https://github.com/harsha-simhadri/big-ann-benchmarks)框架为基础，建立了自己的benchmark集合，除了10亿级数据，新增千万级（Bigann-10M、Deep-10M）和亿级别的标准公开数据集数据集（Bigann-100M、Deep-100M），对标了Faiss-IVF、Faiss-IVFPQ、Faiss-HNSW、Nmslib（HNSW）和Puck/Tinker算法。<p>

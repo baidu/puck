@@ -1,8 +1,8 @@
 ## 关于Puck&Tinker
 
 ### Puck
-名称来源：Puck源自经典MOBA游戏DOTA中的智力英雄，取其飘逸、灵动之意。  
-ANN的检索性能是重中之重，PUCK设计并实现了多种优化方案，着重提升性能和效果，包括但不限于：
+&ensp;&ensp;&ensp;&ensp;名称来源：Puck源自经典MOBA游戏DOTA中的智力英雄，取其飘逸、灵动之意。<p>
+&ensp;&ensp;&ensp;&ensp;ANN的检索性能是重中之重，Puck设计并实现了多种优化方案，着重提升性能和效果，包括但不限于：
 * 采用二层倒排索引架构，能更敏感的感知数据分布，从而非常高效的分割子空间，减少搜索范围；同时采用共享二级类聚中心的方式，大幅减少训练时间
 * 训练时采用启发式迭代的方法，不断优化一二级类聚中心，通过等价空间变换，训练获得更好的数据分布描述
 * 采用多层级量化加速查找，优先通过大尺度量化的小特征快速找到候选集，再通过稍大一些的量化特征二次查找
@@ -10,39 +10,43 @@ ANN的检索性能是重中之重，PUCK设计并实现了多种优化方案，�
 * 严格的内存cacheline对齐和紧致排列，最大程度降低cache miss
 * 支持大尺度的量化，单实例支持尽可能多的数据，针对大尺度量化定向优化，减少量化损失; 同时支持非均匀量化，更加适应各种纬度的特征
 
-
-除了性能以外，Puck还做了很多功能拓展：
+&ensp;&ensp;&ensp;&ensp;除了性能以外，Puck还做了很多功能拓展：
 * 实时插入：支持无锁结构的实时插入，做到数据的实时更新
 * 条件查询：支持检索过程中的条件查询，从底层索引检索过程中就过滤掉不符合要求的结果，解决多路召回归并经常遇到的截断问题，更好满足组合检索的要求(暂未开源)
 * 分布式建库：索引的构建过程支持分布式扩展，全量索引可以通过map-reduce一起建库，无需按分片build，大大加快和简化建库流程。  分布式建库工具(暂未开源)
+* 自适应参数：ANN方法检索参数众多，应用起来有不小门槛，不了解技术细节的用户并不容易找到最优参数，Puck提供参数自适应功能，在大部分情况下使用默认参数即可得到很好效果
 
 ### Tinker
-名称来源：Tinker同样源自经典MOBA游戏DOTA中的智力英雄
-缘起：Puck在大数据集上表现优异，但在千万级以下的小数据集且要求高召回率的场景下优势减小（benchmark），我们思索说如何能继续突破，使得Puck在小数据集上性能更优
-方案：经过不断尝试，我们提出了Tinker算法，Tinker的最终效果大大超出了最初预期,在benchmark上表现优异
+&ensp;&ensp;&ensp;&ensp;名称来源：Tinker同样源自经典MOBA游戏DOTA中的智力英雄<p> 
+&ensp;&ensp;&ensp;&ensp;缘起：Puck在大数据集上表现优异，但在千万级以下的小数据集且要求高召回率的场景下优势减小（[benchmark](../ann-benchmarks/README.md)），我们思索说如何能继续突破，使得Puck在小数据集上性能更优<p> 
+&ensp;&ensp;&ensp;&ensp;方案：经过不断尝试，我们提出了Tinker算法，Tinker的最终效果大大超出了最初预期,在benchmark上表现优异 
 
 ## 比赛获奖情况
-&ensp;&ensp;&ensp;&ensp;首届国际向量检索大赛BigANN是由人工智能领域全球顶级学术会议NeurIPS发起，由微软、facebook等公司协办，是全球最高水平的赛事，旨在提升大规模ANN的研究创新和生产环境中的落地应用。虽是首届大赛，但因NeurIPS的极高知名度和权威性，吸引了众多知名企业和顶尖大学的同台竞技。本届比赛已于2021年12月NeurlPS’21会议期间公布结果       
-Puck在参赛的四个数据集中均排名第一
-           比赛详情：https://big-ann-benchmarks.com/neurips21.html
-           比赛结果：https://github.com/harsha-simhadri/big-ann-benchmarks/blob/main/neurips21/t1_t2/README.md#results-for-t1
+&ensp;&ensp;&ensp;&ensp;首届国际向量检索大赛BigANN是由人工智能领域全球顶级学术会议NeurIPS发起，由微软、facebook等公司协办，是全球最高水平的赛事，旨在提升大规模ANN的研究创新和生产环境中的落地应用。虽是首届大赛，但因NeurIPS的极高知名度和权威性，吸引了众多知名企业和顶尖大学的同台竞技。本届比赛已于2021年12月NeurlPS’21会议期间公布结果  
+&ensp;&ensp;&ensp;&ensp;Puck在参赛的四个数据集中均排名第一<p>
+           比赛详情：https://big-ann-benchmarks.com/neurips21.html        
+           比赛结果：https://github.com/harsha-simhadri/big-ann-benchmarks/blob/main/neurips21/t1_t2/README.md#results-for-t1       
 
 
 # 使用方法简介（训练、建库、检索、实时入库）
 ## 准备特征向量数据
 ### 1.特征文件  
 
-&ensp;&ensp;&ensp;&ensp;特征文件是二进制（puck_index/all_data.feat.bin）。特征向量的纬度是dim，每个向量的存储格式是：sizeof(int)+dim * sizeof(float)。
+&ensp;&ensp;&ensp;&ensp;特征文件是二进制（puck_index/all_data.feat.bin）。特征向量的纬度是dim，每个向量的存储格式是：sizeof(int)+dim * sizeof(float)。存储格式如下：
+| field  | field type   |  description |
+| :------------: | :------------: | :------------: |
+| d  |  int | the vector dimension  |
+|  components | float * d  | the vector components  |
 
 ### 2.标签文件  
 
 &ensp;&ensp;&ensp;&ensp;标签文件（puck_index/all_data.url）是明文存储。特征向量在特征文件的顺序（local id），与其标签在标签文件的顺序保持一致。在实时插入、分布式建库等功能中，必须指定每个样本的标签。
 
-### 3.数据格式化&校验demo脚本
+### 3.数据格式化&校验工具
 
-&ensp;&ensp;&ensp;&ensp;编译产出后，训练建库工具在output/build_tools目录下。可参考脚本：output/build_tools/script/puck_train_control.sh。
+&ensp;&ensp;&ensp;&ensp;以上两个文件可通过工具自动生成。编译产出后，提供训练建库工具output/build_tools/script/puck_train_control.sh。
 
-&ensp;&ensp;&ensp;&ensp;这个[demo](./tools/script/puck_train_control.sh)脚本输入数据格式如示例[文件](./tools/demo/init-feature-example)。脚本对特征向量长度检查&预处理（归一、IP2COS等）后，写特征文件（puck_index/all_data.feat.bin）和标签文件（puck_index/all_data.url）。
+&ensp;&ensp;&ensp;&ensp;这个[工具](../tools/script/puck_train_control.sh)脚本输入数据格式如示例[文件](../tools/demo/init-feature-example), 用户可按示例格式准备数据，格式为key\tvector, vector中的每个float按空格分割。脚本对特征向量长度检查&预处理（归一、IP2COS等）后，写特征文件（puck_index/all_data.feat.bin）和标签文件（puck_index/all_data.url）。
 ````shell
 cd output/build_tools
 ## 使用方法和查看help
@@ -54,7 +58,7 @@ sh script/puck_train_control.sh -i 特征文件
 
 ## 了解训练&建库&检索参数
 
-&ensp;&ensp;&ensp;&ensp;该代码库的训练、建库和检索参数均通过gflags的方式指定。所有gflag定义参考[gflag](./puck/gflags/puck_gflags.cpp)。
+&ensp;&ensp;&ensp;&ensp;该代码库的训练、建库和检索参数均通过gflags的方式指定。所有gflag定义参考[gflag](../puck/gflags/puck_gflags.cpp)。
 
 ### 核心训练&建库参数
 
