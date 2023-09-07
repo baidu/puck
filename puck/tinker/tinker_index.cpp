@@ -201,7 +201,8 @@ int TinkerIndex::build() {
                 (void*)(temp_data_fea.data()));
         object_data[memory_idx] = cur_object;
     }
-
+    data_stream.close();
+    
     _tinker_index.reset(new similarity::Hnsw<float>(*_space.get(), object_data));
     _tinker_index->CreateIndex(*_any_params.get());
     std::string tinker_index_file = _conf.index_path + "/" + puck::FLAGS_tinker_file_name;
