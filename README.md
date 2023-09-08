@@ -42,9 +42,9 @@ cd puck
 ````
 
 ### 3.Use cmake to build this project.
+##### 3.1 Build this project
 ````shell
-cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3 -c "import sysconfig; print(sysconfig.get_path('include'))")  \
-    -DPYTHON_LIBRARY=$(python3 -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))") \
+cmake -DCMAKE_BUILD_TYPE=Release 
     -DMKLROOT=${MKLROOT} \
     -DBLA_VENDOR=Intel10_64lp_seq \
     -DBLA_STATIC=ON  \
@@ -52,6 +52,26 @@ cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3 -c "import sysco
 
 cd build && make && make install
 ````
+##### 3.2 Build with GTEST 
+Use conditional compilation variable named WITH_TESTING.
+````shell
+cmake -DCMAKE_BUILD_TYPE=Release 
+    -DMKLROOT=${MKLROOT} \
+    -DBLA_VENDOR=Intel10_64lp_seq \
+    -DBLA_STATIC=ON  \
+    -DWITH_TESTING=ON \
+    -B build .
+
+cd build && make && make install
+````
+
+##### 3.3 Build with Python
+
+Refer to the [Dockerfile](./ann-benchmarks/install/Dockerfile.puck_inmem)
+````shell
+python3 setup.py install 
+````
+
 Output files are saved in build/output subdirectory by default.
 
 ## How to use
