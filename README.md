@@ -108,10 +108,10 @@ ln -s build_tools/puck_index .
 
 recall results are stored in file RECALL_FILE_NAME.
 
-## more details
+## More Details
 [more details for puck](./docs/README.md)
 
-## benchmark
+## Benchmark
 Please see [this readme](./ann-benchmarks/README.md) for details.
 
 this ann-benchmark is forked from https://github.com/harsha-simhadri/big-ann-benchmarks of 2021.
