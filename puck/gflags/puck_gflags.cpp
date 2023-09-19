@@ -31,8 +31,8 @@ DEFINE_string(puck_log_file, "log/puck.log", "log file name");
 DEFINE_string(index_path, "puck_index", "lib of index files");
 DEFINE_string(index_file_name, "index.dat", "store index format information");
 DEFINE_string(feature_file_name, "all_data.feat.bin", "feature data of all points");
-DEFINE_string(coarse_codebook_file_name, "GNOIMI_coarse.dat", "coarse codebook");
-DEFINE_string(fine_codebook_file_name, "GNOIMI_fine.dat", "fine codebook");
+DEFINE_string(coarse_codebook_file_name, "coarse.dat", "coarse codebook");
+DEFINE_string(fine_codebook_file_name, "fine.dat", "fine codebook");
 
 DEFINE_string(cell_assign_file_name, "cell_assign.dat", "cell assign");
 //realtime insert和分布式建库的索引需要这个索引文件，search返回的local id是这个样本在该文件的行数
