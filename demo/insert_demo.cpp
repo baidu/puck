@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
             break;
         }
 
-        for (int j = 0; j < (int)request.topk; j ++) {
+        for (int j = 0; j < (int)response.result_num; j ++) {
             char* p = buff;
             std::string lable;
 
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
             break;
         }
 
-        for (int j = 0; j < (int)request.topk; j ++) {
+        for (int j = 0; j < (int)response.result_num; j ++) {
             char* p = buff;
             std::string lable;
 
