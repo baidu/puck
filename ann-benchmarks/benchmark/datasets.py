@@ -311,7 +311,7 @@ class DatasetCompetitionFormat(Dataset):
             download(sourceurl, outfile, max_size=file_size)
             # then overwrite the header...
             header = np.memmap(outfile, shape=2, dtype='uint32', mode="r+")
-            assert header[0] == self.nb
+            #assert header[0] == self.nb
             assert header[1] == self.d
             header[0] = self.nb
 

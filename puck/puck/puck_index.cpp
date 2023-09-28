@@ -506,15 +506,15 @@ int PuckIndex::search_nearest_filter_points(SearchContext* context, const float*
     //一级聚类中心的排序结果
     float* coarse_distance = search_cell_data.coarse_distance;
     uint32_t* coarse_tag = search_cell_data.coarse_tag;
-    //过滤阈值
-    float pivot = coarse_distance[_conf.search_coarse_count - 1];
 
     //堆结构
     float* result_distance = context->get_search_point_data().result_distance;
     uint32_t* result_tag = context->get_search_point_data().result_tag;
     MaxHeap filter_heap(_conf.filter_topk, result_distance, result_tag);
-
+    
     float query_norm = cblas_sdot(_conf.feature_dim, feature, 1, feature, 1);
+    //过滤阈值
+    float pivot = (filter_heap.get_top_addr()[0] - query_norm) / _conf.radius_rate / 2.0;
 
     for (uint32_t l = 0; l < _conf.search_coarse_count; ++l) {
         int coarse_id = coarse_tag[l];
