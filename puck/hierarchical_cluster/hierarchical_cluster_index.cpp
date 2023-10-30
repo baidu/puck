@@ -41,10 +41,6 @@
 #include "puck/search_context.h"
 #include "puck/base/md5.h"
 
-#ifndef FINTEGER
-#define FINTEGER long
-#endif
-
 extern "C" {
 
     /* declare BLAS functions, see http://www.netlib.org/clapack/cblas/ */
@@ -1515,7 +1511,7 @@ const float* HierarchicalClusterIndex::normalization(SearchContext* context, con
 
     if (_conf.ip2cos == 1) {
         uint32_t dim = _conf.feature_dim - 1;
-        memset(search_cell_data.query_norm, 0, _conf.feature_dim);
+        memset(search_cell_data.query_norm, 0, sizeof(float) * _conf.feature_dim);
         memcpy(search_cell_data.query_norm, feature, sizeof(float) * dim);
         return search_cell_data.query_norm;
     } else if (_conf.whether_norm) {

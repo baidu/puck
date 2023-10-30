@@ -34,7 +34,9 @@ public:
     void show();
     int init();
     int build(uint32_t n);
-    int search(uint32_t n, const float* query_fea,const uint32_t topk, float* distance, uint32_t* labels);
+    int search(uint32_t n, const float* query_fea, const uint32_t topk, float* distance, uint32_t* labels);
+    int filter_search(uint32_t n, const float* x, const uint32_t topk, float* distances, uint32_t* labels,
+                      int* indptr,  int* indices);
     ~PySearcher();
 private:
     std::unique_ptr<puck::Index> _index;

@@ -23,6 +23,9 @@
 #include <vector>
 #include "puck/index_conf.h"
 #include "puck/index.h"
+#include "puck/puck/multi_brief_puck_index.h"
+#include "puck/tinker/method/hnsw.h"
+
 namespace puck {
 class FineCluster;
 //typedef std::vector<std::pair<float, FineCluster*>>
@@ -117,13 +120,26 @@ public:
     bool debug() {
         return _debug;
     }
+    IDSelector* get_selector(){
+        return _selector;
+    }
 
+    void init_selector(size_t nb, const int32_t *lims, const int32_t *indices){
+        if(_selector == nullptr){
+            _selector = new IDSelector(nb, lims, indices);
+        }
+    }
+    similarity::VisitedList* get_visited_list(){
+        return _visited_list;
+    }
 private:
     uint64_t _logid;
     const Request* _request;
     bool _debug;
     bool _inited;
     char* _model;
+    IDSelector* _selector;
+    similarity::VisitedList* _visited_list;
     IndexConf _init_conf;
     std::string _log_string;
     SearchCellData _search_cell_data;

@@ -954,16 +954,26 @@ int PuckIndex::puck_single_assign(BuildInfo* build_info, std::vector<Quantizatio
 
     for (auto* quantization : quantizations) {
         auto& param = quantization->get_quantization_params();
+        std::unique_ptr<float[]> pq_table(new float[param.nsq * param.ks]);
+        quantization->get_dist_table(residual.get(), pq_table.get());
 
         //LOG(INFO) << param.nsq << " " << param.ks << " " << param.lsq;
         for (u_int32_t k = 0; k < param.nsq; ++k) {
+            float dist_min = std::numeric_limits<float>::max();
+            for(size_t i = 0; i < param.ks; ++i){
+                if (pq_table[k * param.ks +i ] < dist_min){
+                    dist_min = pq_table[k * param.ks +i ];
+                    pq_assign = i;
+                }
+            }
+            
             float* sub_residual = residual.get() + k * param.lsq;
             int distance_type = 2;
             float* cur_pq_centroids = quantization->get_sub_coodbooks(k);
 
             //knn_full_thread(distance_type, 1, param.ks, param.lsq, 1,
             //                cur_pq_centroids, sub_residual, nullptr, &pq_assign, &pq_distance, n_thread);
-            nearest_center(param.lsq, cur_pq_centroids, param.ks, sub_residual, 1, &pq_assign, &pq_distance);
+            //nearest_center(param.lsq, cur_pq_centroids, param.ks, sub_residual, 1, &pq_assign, &pq_distance);
             auto* quantized_fea = quantization->get_quantized_feature(idx);
             quantized_fea += quantization->get_fea_offset();
             quantized_fea[k] = (unsigned char)pq_assign;

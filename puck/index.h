@@ -84,6 +84,7 @@ enum class IndexType {
     HIERARCHICAL_CLUSTER = 0,
     PUCK,
     TINKER,
+    MULTI_BRIEF_PUCK_INDEX,
 };
 
 IndexType load_index_type();
