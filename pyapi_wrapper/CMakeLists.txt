@@ -20,6 +20,7 @@ file(GLOB SWIG_USED_CPP
         "../puck/gflags/*.cpp"
         "../puck/hierarchical_cluster/*.cpp"
         "../puck/puck/puck_index.cpp"
+        "../puck/puck/multi_brief_puck_index.cpp"
         "../puck/puck/quantization.cpp"
         "../puck/puck/distances_simd.cpp"
         "../puck/tinker/method/hnsw.cc"

@@ -108,7 +108,7 @@ int IndexConf::adaptive_train_param() {
         return 0;
     }
 
-    if (index_type == IndexType::PUCK) {
+    if (index_type == IndexType::PUCK || index_type == IndexType::MULTI_BRIEF_PUCK_INDEX) {
 
         google::CommandLineFlagInfo info;
         //filter_nsq 未设置
