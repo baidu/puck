@@ -61,7 +61,7 @@ DEFINE_string(filter_data_file_name, "filter_data.dat", "filter data of points")
 DEFINE_string(tinker_file_name, "tinker_relations.dat", "tinker_file_name");
 DEFINE_int32(tinker_neighborhood, 16, "neighborhood conut");
 DEFINE_int32(tinker_construction, 600, "tinker_construction");
-
+DEFINE_string(ood_query_file_name, "help_query.feat.bin", "help query");
 /***********检索参数*********/
 //检索相关
 //检索时，初始化内存池的size

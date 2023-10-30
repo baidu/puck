@@ -63,6 +63,7 @@ DECLARE_string(filter_data_file_name);
 DECLARE_string(tinker_file_name);
 DECLARE_int32(tinker_neighborhood);
 DECLARE_int32(tinker_construction);
+DECLARE_string(ood_query_file_name);
 
 /***********检索参数*********/
 //检索时，初始化内存池的size

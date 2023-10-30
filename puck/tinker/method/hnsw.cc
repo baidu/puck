@@ -240,7 +240,7 @@ Hnsw<dist_t>::CreateIndex(const AnyParams& IndexParams) {
         ////pmgr.CheckUnused();
         return;
     }
-
+    
     ElList_.resize(this->data_.size(), nullptr);
     // One entry should be added before all the threads are started, or else add() will not work properly
     HnswNode* first = new HnswNode(this->data_[0], 0 /* id == 0 */);
@@ -286,7 +286,6 @@ Hnsw<dist_t>::CreateIndex(const AnyParams& IndexParams) {
         }
     });
 
-
     ParallelFor(0, this->data_.size(), indexThreadQty_, [&](int id, int threadId) {
         HnswNode* node = ElList_[id];
         if (nodeStart[id] != id){
@@ -298,6 +297,52 @@ Hnsw<dist_t>::CreateIndex(const AnyParams& IndexParams) {
             LOG(INFO) << "adding "<<id <<" / "<<this->data_.size() <<" in threadId = "<<threadId;
         }
     });
+
+    {
+        //init query 
+        double p_val = 0.01;
+        LOG(INFO) << "init help query , p_val = " << p_val ;
+        size_t helpQuerySize, helpQueryDim;
+        float* helpQuery;
+        string helpQueryFilename = puck::FLAGS_index_path + "/" + puck::FLAGS_ood_query_file_name;
+        std::ifstream checkFile(helpQueryFilename);
+        if(checkFile.good()){
+            get_bin_metadata(helpQueryFilename,helpQuerySize,helpQueryDim);
+            double fetch_val = p_val * this->data_.size() / double(helpQuerySize);
+
+            gen_random_slice<dist_t>(helpQueryFilename, fetch_val, helpQuery, helpQuerySize, helpQueryDim);
+            LOG(INFO) << "helpQuerySize = " << helpQuerySize  << "   , helpQueryDim = " << helpQueryDim << endl;
+            
+            size_t datalength = helpQueryDim * sizeof(float);
+            similarity::ObjectVector queryObjectData(helpQuerySize);
+            for (size_t i = 0; i < helpQuerySize; ++i) {
+                similarity::Object* cur_object = new similarity::Object((char*)(helpQuery + i * helpQueryDim));
+                queryObjectData[i] = cur_object;
+                queryObjectData[i]->data_length_ = datalength;
+            }
+            
+            ParallelFor(0, helpQuerySize, indexThreadQty_, [&](int id, int threadId) {
+                HnswNode* node = new HnswNode(queryObjectData[id], id);
+
+                uint32_t ep_id = 0;  //close cell id ;
+                HnswNode* ep = ElList_[ep_id]; //close ep 
+                addLevel0Resize(&space_, ep, node);
+                
+                if (id % 1000 == 0){
+                    LOG(INFO) << "using help query, adding "<<id <<" / "<< helpQuerySize <<" in threadId = "<<threadId;
+                }
+            });
+            
+            delete []helpQuery;
+            LOG(INFO) << " help query done ";
+        } else {
+            LOG(INFO) << " no help query , so native puck in ood ";
+        }
+        
+    }
+
+    
+
 
     data_level0_memory_ = NULL;
     //linkLists_ = NULL;
@@ -616,6 +661,33 @@ Hnsw<dist_t>::addLevel0(const Space<dist_t>* space, HnswNode* ep, HnswNode* NewE
         }
     }
 }
+
+template <typename dist_t>
+void
+Hnsw<dist_t>::addLevel0Resize(const Space<dist_t>* space, HnswNode* ep, HnswNode* NewElement) {
+  
+    {
+        priority_queue<HnswNodeDistCloser<dist_t>> resultSet;
+        kSearchElementsWithAttemptsLevel(space, NewElement->getData(), efConstruction_, resultSet, ep, 0);
+
+        vector<HnswNode*> resultVec;
+
+        while (!resultSet.empty()) {
+            resultVec.push_back(resultSet.top().getMSWNodeHier());
+            resultSet.pop();
+        }
+
+        size_t resultLen = resultVec.size();
+        for (size_t i = 0 ; i < resultLen - 1; ++i){
+            HnswNode* it = resultVec[i];
+            for(size_t j = i + 1 ; j < resultLen ; ++j){
+                HnswNode* jt = resultVec[j];
+                link(it, jt, 0, space, delaunay_type_);
+            }
+        }
+    }
+}
+
 
 
 template <typename dist_t>

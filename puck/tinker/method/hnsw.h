@@ -27,6 +27,7 @@
 
 #include "puck/tinker/index.h"
 #include "puck/tinker/params.h"
+#include "puck/gflags/puck_gflags.h"
 
 #include <condition_variable>
 #include <iostream>
@@ -43,7 +44,72 @@
 #define METH_HNSW_SYN "Hierarchical_NSW"
 
 namespace similarity {
+inline void get_bin_metadata_impl(std::basic_istream<char> &reader, size_t &nrows, size_t &ncols, size_t offset = 0)
+{
+    int nrows_32, ncols_32;
+    reader.seekg(offset, reader.beg);
+    reader.read((char *)&nrows_32, sizeof(int));
+    reader.read((char *)&ncols_32, sizeof(int));
+    nrows = nrows_32;
+    ncols = ncols_32;
+}
 
+inline void get_bin_metadata(const std::string &bin_file, size_t &nrows, size_t &ncols, size_t offset = 0)
+{
+    std::ifstream reader(bin_file.c_str(), std::ios::binary);
+    get_bin_metadata_impl(reader, nrows, ncols, offset);
+}
+
+template <typename T>
+void gen_random_slice(const std::string data_file, double p_val, float *&sampled_data, size_t &slice_size,
+                      size_t &ndims)
+{
+    size_t npts;
+    uint32_t npts32, ndims32;
+    std::vector<std::vector<float>> sampled_vectors;
+
+    // amount to read in one shot
+    size_t read_blk_size = 64 * 1024 * 1024;
+    // create cached reader + writer
+    std::ifstream base_reader(data_file.c_str());
+
+    // metadata: npts, ndims
+    base_reader.read((char *)&npts32, sizeof(uint32_t));
+    base_reader.read((char *)&ndims32, sizeof(uint32_t));
+    npts = npts32;
+    ndims = ndims32;
+
+    // std::unique_ptr<T[]> cur_vector_T = std::make_unique<T[]>(ndims);
+    T* cur_vector_T = new T[ndims];
+    p_val = p_val < 1 ? p_val : 1;
+
+    std::random_device rd; // Will be used to obtain a seed for the random number
+    size_t x = rd();
+    std::mt19937 generator((uint32_t)x);
+    std::uniform_real_distribution<float> distribution(0, 1);
+
+    for (size_t i = 0; i < npts; i++)
+    {
+        base_reader.read((char *)cur_vector_T, ndims * sizeof(T));
+        float rnd_val = distribution(generator);
+        if (rnd_val < p_val)
+        {
+            std::vector<float> cur_vector_float;
+            for (size_t d = 0; d < ndims; d++)
+                cur_vector_float.push_back(cur_vector_T[d]);
+            sampled_vectors.push_back(cur_vector_float);
+        }
+    }
+    slice_size = sampled_vectors.size();
+    sampled_data = new float[slice_size * ndims];
+    for (size_t i = 0; i < slice_size; i++)
+    {
+        for (size_t j = 0; j < ndims; j++)
+        {
+            sampled_data[i * ndims + j] = sampled_vectors[i][j];
+        }
+    }
+}
 typedef float (*EfficientDistFunc)(const float* pVect1, const float* pVect2, size_t& qty, float* TmpRes);
 
 enum DistFuncType {
@@ -292,13 +358,15 @@ public:
     template <typename dist_t>
     void addFriendlevel(int level, HnswNode* element, const Space<dist_t>* space, int delaunay_type) {
         std::unique_lock<std::mutex> lock(accessGuard_);
+
         if (element->getId() == getId()){
             return;
         }
         for (unsigned i = 0; i < allFriends_[level].size(); i++)
             if (allFriends_[level][i] == element) {
-                std::cerr << "This should not happen. For some reason the elements is "
-                     "already added";
+                // continue;
+                // std::cerr << "This should not happen. For some reason the elements is "
+                //      "already added";
                 return;
             }
 
@@ -311,7 +379,7 @@ public:
             } else {
                 shrink = false;
             }
-        } else if (allFriends_[level].size() > maxsize0) {
+        } else if (allFriends_[level].size() > maxsize0) { // 2 * M 
             shrink = true;
         } else {
             shrink = false;
@@ -591,6 +659,7 @@ public:
     void add(const Space<dist_t>* space, HnswNode* newElement);
     void initLevel0(const Space<dist_t>* space, HnswNode* ep, HnswNode* newElement);
     void addLevel0(const Space<dist_t>* space, HnswNode* ep, HnswNode* newElement);
+    void addLevel0Resize(const Space<dist_t>* space, HnswNode* ep, HnswNode* newElement);
     //void addToElementListSynchronized(HnswNode *newElement);
 
     void link(HnswNode* first, HnswNode* second, int level, const Space<dist_t>* space, int delaunay_type) {
