@@ -52,6 +52,10 @@ DECLARE_string(train_fea_file_name);
 # define BAIDU_CACHELINE_ALIGNMENT_8 __attribute__((aligned(8)))
 #endif /* __GNUC__ */
 
+#ifndef FINTEGER
+#define FINTEGER long
+#endif
+
 //索引中二级聚类中心的信息
 struct BAIDU_CACHELINE_ALIGNMENT_8 FineCluster {
     float stationary_cell_dist;

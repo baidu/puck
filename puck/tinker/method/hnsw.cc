@@ -282,7 +282,7 @@ Hnsw<dist_t>::CreateIndex(const AnyParams& IndexParams) {
     for (size_t i = 0; i < ElList_.size(); i++) {
         if (ElList_[i]->getData()->bufferlength() > dataSectionSize) {
             dataSectionSize = ElList_[i]->getData()->bufferlength();
-            vectorlength_ = ElList_[i]->getData()->datalength();
+            vectorlength_ = ElList_[i]->getData()->datalength() / sizeof(dist_t);
         }
     }
 
