@@ -41,10 +41,6 @@
 #include "puck/search_context.h"
 #include "puck/base/md5.h"
 
-#ifndef FINTEGER
-#define FINTEGER long
-#endif
-
 extern "C" {
 
     /* declare BLAS functions, see http://www.netlib.org/clapack/cblas/ */
@@ -318,7 +314,6 @@ int HierarchicalClusterIndex::read_coodbooks() {
         cur_fine_cluster.memory_idx_start = 0;
         cur_fine_cluster.stationary_cell_dist = fine_norms[fine_id] + coarse_fine_products[i];
     }
-
     LOG(INFO) << "HierarchicalClusterIndex::read_coodbooks Suc.";
     return 0;
 }
@@ -1240,8 +1235,8 @@ void HierarchicalClusterIndex::batch_assign(const uint32_t total_cnt, const std:
         total_pruning_computation += pruning_computation[i];
     }
 
-    delete [] _fine_norms;
-    _fine_norms = nullptr;
+    //delete [] _fine_norms;
+    //_fine_norms = nullptr;
     LOG(INFO) << "batch_assign succeeded, deviation error = " <<
               total_error / total_cnt << ", pruning computation = " << total_pruning_computation / total_cnt;
 }
@@ -1515,7 +1510,7 @@ const float* HierarchicalClusterIndex::normalization(SearchContext* context, con
 
     if (_conf.ip2cos == 1) {
         uint32_t dim = _conf.feature_dim - 1;
-        memset(search_cell_data.query_norm, 0, _conf.feature_dim);
+        memset(search_cell_data.query_norm, 0, sizeof(float) * _conf.feature_dim);
         memcpy(search_cell_data.query_norm, feature, sizeof(float) * dim);
         return search_cell_data.query_norm;
     } else if (_conf.whether_norm) {

@@ -27,6 +27,7 @@
 #include "puck/puck/puck_index.h"
 #include "puck/tinker/tinker_index.h"
 #include "puck/hierarchical_cluster/hierarchical_cluster_index.h"
+#include "puck/puck/dynamic_puck_index.h"
 namespace py_puck_api {
 
 DEFINE_int32(index_type, 1, "");
@@ -52,7 +53,8 @@ int PySearcher::build(uint32_t total_cnt) {
     } else if (FLAGS_index_type == int(puck::IndexType::HIERARCHICAL_CLUSTER)) {
         _index.reset(new puck::HierarchicalClusterIndex());
         LOG(INFO) << "init index of Flat";
-    } else {
+    }
+    else {
         LOG(INFO) << "init index of Error, Nan type";
         return -1;
     }
@@ -63,7 +65,6 @@ int PySearcher::build(uint32_t total_cnt) {
     }
 
     LOG(INFO) << "train Suc.\n";
-
     LOG(INFO) << "start to build\n";
 
     if (_index->build() != 0) {
@@ -76,9 +77,13 @@ int PySearcher::build(uint32_t total_cnt) {
 }
 
 int PySearcher::init() {
-
+    if (FLAGS_index_type == int(puck::IndexType::PUCK)) {
+        _index.reset(new puck::DynamicPuckIndex());
+        LOG(INFO) << "init index of DynamicPuckIndex";
+    } 
+    /*
     puck::IndexType index_type = puck::load_index_type();
-
+    index_type = puck::IndexType::DYNAMICPUCK;
     if (index_type == puck::IndexType::TINKER) { //Tinker
         LOG(INFO) << "init index of Tinker";
         _index.reset(new puck::TinkerIndex());
@@ -88,10 +93,14 @@ int PySearcher::init() {
     } else if (index_type == puck::IndexType::HIERARCHICAL_CLUSTER) {
         _index.reset(new puck::HierarchicalClusterIndex());
         LOG(INFO) << "init index of Flat";
-    } else {
+    } else if (index_type == puck::IndexType::DYNAMICPUCK) {
+        _index.reset(new puck::DynamicPuckIndex());
+        LOG(INFO) << "init index of DynamicPuckIndex";
+    }else {
         LOG(INFO) << "init index of Error, Nan type";
         return -1;
     }
+    */
 
     if (_index->init() != 0) {
         LOG(ERROR) << "load index Faild";
@@ -104,6 +113,7 @@ int PySearcher::init() {
     if (conf.ip2cos) {
         --_dim;
     }
+    LOG(INFO)<<"FLAGS_context_initial_pool_size = "<<puck::FLAGS_context_initial_pool_size;
     return 0;
 }
 
@@ -166,6 +176,25 @@ int PySearcher::search(uint32_t n, const float* query_fea, const uint32_t topk, 
         _index->search(&request, &response);
     });
 
+    return 0;
+}
+
+int PySearcher::batch_add(uint32_t n, uint32_t dim, const float* features, const uint32_t* labels){
+    puck::DynamicPuckIndex* dynamic_index = dynamic_cast<puck::DynamicPuckIndex*>(_index.get());
+    if(dynamic_index == nullptr){
+        LOG(ERROR)<<"dynamic_puck_index is null";
+        return -1;
+    }
+    dynamic_index->batch_add(n, dim, features, labels);
+    return 0;
+}
+int PySearcher::batch_delete(uint32_t n, const uint32_t* labels){
+    puck::DynamicPuckIndex* dynamic_index = dynamic_cast<puck::DynamicPuckIndex*>(_index.get());
+    if(dynamic_index == nullptr){
+        LOG(ERROR)<<"dynamic_puck_index is null";
+        return -1;
+    }
+    dynamic_index->batch_delete(n, labels);
     return 0;
 }
 PySearcher::~PySearcher() {};

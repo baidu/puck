@@ -22,6 +22,7 @@ file(GLOB SWIG_USED_CPP
         "../puck/puck/puck_index.cpp"
         "../puck/puck/quantization.cpp"
         "../puck/puck/distances_simd.cpp"
+        "../puck/puck/dynamic_puck_index.cpp"
         "../puck/tinker/method/hnsw.cc"
         "../puck/tinker/method/tinker_distfunc_opt.cc"
         "../puck/tinker/tinker_index.cpp"
