@@ -241,7 +241,7 @@ Hnsw<dist_t>::CreateIndex(const AnyParams& IndexParams) {
         return;
     }
 
-    ElList_.resize(this->data_.size());
+    ElList_.resize(this->data_.size(), nullptr);
     // One entry should be added before all the threads are started, or else add() will not work properly
     HnswNode* first = new HnswNode(this->data_[0], 0 /* id == 0 */);
     first->init(getRandomLevel(mult_), maxM_, maxM0_);
@@ -249,17 +249,53 @@ Hnsw<dist_t>::CreateIndex(const AnyParams& IndexParams) {
     enterpoint_ = first;
     ElList_[0] = first;
     visitedlistpool = new VisitedListPool(indexThreadQty_, this->data_.size());
+    std::vector<uint32_t> nodeStart(this->data_.size(), this->data_.size());
+
+    for(size_t i = 0; i < groupNum_; ++i){
+
+        for(size_t j = groupInfo_[i]; j < groupInfo_[i+1];++j){
+            nodeStart[j] = groupInfo_[i];
+        }
+    }
 
     ParallelFor(1, this->data_.size(), indexThreadQty_, [&](int id, int threadId) {
         HnswNode* node = new HnswNode(this->data_[id], id);
         if (id % 1000000 == 0){
             LOG(INFO) << "adding "<<id <<" / "<<this->data_.size() <<" in threadId = "<<threadId;
         }
-        add(&space_, node);
+        if (nodeStart[id] == id){
+            add(&space_, node);
+        }else{
+            node->init(0, maxM_, maxM0_);
+        }
         {
             unique_lock<mutex> lock(ElListGuard_);
             ElList_[id] = node;
 
+        }
+    });
+    ParallelFor(0, this->data_.size(), indexThreadQty_, [&](int id, int threadId) {
+        HnswNode* node = ElList_[id];
+        if (nodeStart[id] != id){
+            uint32_t ep_id = nodeStart[id];
+            HnswNode* ep = ElList_[ep_id];
+            initLevel0(&space_, ep, node);
+        }
+        if (id % 1000000 == 0){
+            LOG(INFO) << "adding "<<id <<" / "<<this->data_.size() <<" in threadId = "<<threadId;
+        }
+    });
+
+
+    ParallelFor(0, this->data_.size(), indexThreadQty_, [&](int id, int threadId) {
+        HnswNode* node = ElList_[id];
+        if (nodeStart[id] != id){
+            //uint32_t ep_id = nodeStart[id];
+            //HnswNode* ep = ElList_[ep_id];
+            addLevel0(&space_, node, node);
+        }
+        if (id % 10000 == 0){
+            LOG(INFO) << "adding "<<id <<" / "<<this->data_.size() <<" in threadId = "<<threadId;
         }
     });
 
@@ -282,7 +318,7 @@ Hnsw<dist_t>::CreateIndex(const AnyParams& IndexParams) {
     for (size_t i = 0; i < ElList_.size(); i++) {
         if (ElList_[i]->getData()->bufferlength() > dataSectionSize) {
             dataSectionSize = ElList_[i]->getData()->bufferlength();
-            vectorlength_ = ElList_[i]->getData()->datalength();
+            vectorlength_ = ElList_[i]->getData()->datalength() / sizeof(dist_t);
         }
     }
 
@@ -430,15 +466,20 @@ Hnsw<dist_t>::StrDesc() const {
 }
 
 template <typename dist_t> Hnsw<dist_t>::~Hnsw() {
-    delete visitedlistpool;
+    if (visitedlistpool != nullptr){
+        delete visitedlistpool;
+    }
 
-    if (data_level0_memory_) {
+    if (data_level0_memory_ != nullptr) {
         free(data_level0_memory_);
     }
 
     for (size_t i = 0; i < ElList_.size(); i++) {
         delete ElList_[i];
+        ElList_[i] = nullptr;
     }
+    ElList_.clear();
+    ElList_.shrink_to_fit();
 
     //for (const Object *p : data_rearranged_)
     //    delete p;
@@ -499,25 +540,26 @@ Hnsw<dist_t>::add(const Space<dist_t>* space, HnswNode* NewElement) {
     for (int level = min(curlevel, maxlevelcopy); level >= 0; level--) {
         priority_queue<HnswNodeDistCloser<dist_t>> resultSet;
         kSearchElementsWithAttemptsLevel(space, NewElement->getData(), efConstruction_, resultSet, ep, level);
+        size_t curM = (level == 0)?maxM0_ : maxM_;
 
         switch (delaunay_type_) {
         case 0:
-            while (resultSet.size() > M_) {
+            while (resultSet.size() > curM) {
                 resultSet.pop();
             }
 
             break;
 
         case 1:
-            NewElement->getNeighborsByHeuristic1(resultSet, M_, space);
+            NewElement->getNeighborsByHeuristic1(resultSet, curM, space);
             break;
 
         case 2:
-            NewElement->getNeighborsByHeuristic2(resultSet, M_, space, level);
+            NewElement->getNeighborsByHeuristic2(resultSet, curM, space, level);
             break;
 
         case 3:
-            NewElement->getNeighborsByHeuristic3(resultSet, M_, space, level);
+            NewElement->getNeighborsByHeuristic3(resultSet, curM, space, level);
             break;
         }
 
@@ -537,6 +579,60 @@ Hnsw<dist_t>::add(const Space<dist_t>* space, HnswNode* NewElement) {
         delete lock;
     }
 }
+
+template <typename dist_t>
+void
+Hnsw<dist_t>::addLevel0(const Space<dist_t>* space, HnswNode* ep, HnswNode* NewElement) {
+  
+    {
+        priority_queue<HnswNodeDistCloser<dist_t>> resultSet;
+        kSearchElementsWithAttemptsLevel(space, NewElement->getData(), efConstruction_, resultSet, ep, 0);
+
+        switch (delaunay_type_) {
+        case 0:
+            while (resultSet.size() > maxM0_) {
+                resultSet.pop();
+            }
+
+            break;
+
+        case 1:
+            NewElement->getNeighborsByHeuristic1(resultSet, maxM0_, space);
+            break;
+
+        case 2:
+            NewElement->getNeighborsByHeuristic2(resultSet, maxM0_, space, 0);
+            break;
+
+        case 3:
+            NewElement->getNeighborsByHeuristic3(resultSet, maxM0_, space, 0);
+            break;
+        }
+        NewElement->clearAllFriends(0);
+        while (!resultSet.empty()) {
+            auto* ep = resultSet.top().getMSWNodeHier(); // memorizing the closest
+            link(resultSet.top().getMSWNodeHier(), NewElement, 0, space, delaunay_type_);
+            resultSet.pop();
+        }
+    }
+}
+
+
+template <typename dist_t>
+void
+Hnsw<dist_t>::initLevel0(const Space<dist_t>* space, HnswNode* ep, HnswNode* NewElement) {
+  
+    {
+        priority_queue<HnswNodeDistCloser<dist_t>> resultSet;
+        kSearchElementsWithAttemptsLevel(space, NewElement->getData(), maxM0_, resultSet, ep, 0);
+
+        while (!resultSet.empty()) {
+            NewElement->addFriendlevel(0, resultSet.top().getMSWNodeHier(), space, delaunay_type_);
+            resultSet.pop();
+        }
+    }
+}
+
 
 template <typename dist_t>
 void

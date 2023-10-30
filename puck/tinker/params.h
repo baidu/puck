@@ -77,7 +77,12 @@ public:
     }
 
     AnyParams() {}
-
+    ~AnyParams(){
+        ParamNames.clear();
+        ParamNames.shrink_to_fit();
+        ParamValues.clear();
+        ParamValues.shrink_to_fit();
+    }
     std::vector<std::string>  ParamNames;
     std::vector<std::string>  ParamValues;
 
