@@ -64,7 +64,12 @@ public:
         data_ = Obj;
         id_ = id;
     }
-    ~HnswNode() {};
+    ~HnswNode() {
+        for (int i = 0; i <= level; i++) {
+            allFriends_[i].clear();
+            allFriends_[i].shrink_to_fit();
+        }
+    };
     const Object* getData() {
         return data_;
     }
@@ -287,7 +292,9 @@ public:
     template <typename dist_t>
     void addFriendlevel(int level, HnswNode* element, const Space<dist_t>* space, int delaunay_type) {
         std::unique_lock<std::mutex> lock(accessGuard_);
-
+        if (element->getId() == getId()){
+            return;
+        }
         for (unsigned i = 0; i < allFriends_[level].size(); i++)
             if (allFriends_[level][i] == element) {
                 std::cerr << "This should not happen. For some reason the elements is "
@@ -420,6 +427,9 @@ public:
     }
     const std::vector<HnswNode*>& getAllFriends(int level) const {
         return allFriends_[level];
+    }
+    void clearAllFriends(int level) {
+        allFriends_[level].clear();
     }
     std::mutex accessGuard_;
 
@@ -579,6 +589,8 @@ public:
                                           int level) const;
 
     void add(const Space<dist_t>* space, HnswNode* newElement);
+    void initLevel0(const Space<dist_t>* space, HnswNode* ep, HnswNode* newElement);
+    void addLevel0(const Space<dist_t>* space, HnswNode* ep, HnswNode* newElement);
     //void addToElementListSynchronized(HnswNode *newElement);
 
     void link(HnswNode* first, HnswNode* second, int level, const Space<dist_t>* space, int delaunay_type) {
@@ -587,7 +599,10 @@ public:
         first->addFriendlevel(level, second, space, delaunay_type);
         second->addFriendlevel(level, first, space, delaunay_type);
     }
-
+    void SetGroupInfo(size_t n, const uint32_t* group_info){
+        groupNum_ = n;
+        groupInfo_ = group_info;
+    }
     //
 private:
     size_t M_;
@@ -604,7 +619,8 @@ private:
     int maxlevel_;
     unsigned int enterpointId_;
     unsigned int totalElementsStored_;
-
+    size_t groupNum_;
+    const uint32_t* groupInfo_;
     //ObjectVector data_rearranged_;
 
     VisitedListPool* visitedlistpool;

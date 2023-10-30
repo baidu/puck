@@ -1,0 +1,25 @@
+#edit-mode: -*- python -*-
+#coding:gbk
+
+ImportConfigsFrom('../')
+
+#platform, if not write PLATFORM('xxx') in BCLOUD file, default is 'redhat4u3'
+#PLATFORM('centos4u3')
+
+#gcc version, default 'gcc'
+#your python3 should using the same gcc version
+COMPILER('gcc12')
+CPPFLAGS('-std=c++11 -Wall -fopenmp -mavx -mavx2 -msse4 -Wcast-align -Ofast -lm -lrt -pthread  -DHAVE_CXX0X -march=native -Wl,--no-as-needed -fpic -g -DFINTEGER=int')
+
+#link flags
+LDFLAGS('-lpthread -pthread -lcrypto -lrt -ldl -fopenmp -lz')
+
+#-I path
+INCPATHS('../')
+INCPATHS('$OUT_ROOT/baidu/third-party/cpython/output/include/python3.6m/ ')
+user_sources=GLOB(' ../puck/*.cpp ../puck/base/*.cpp  ../puck/gflags/*.cpp ../puck/hierarchical_cluster/*.cpp ../puck/puck/*.cpp ../puck/tinker/*.cpp ../puck/tinker/method/*.cc')
+
+#py. so
+py_lib_sources=user_sources
+py_lib_sources+= ' py_api_wrapper.cpp '
+SharedLibrary('_py_puck_api', LinkDeps(True), Sources(py_lib_sources + GLOB_GEN_SRCS(' ../py_puck_api/py_puck_api.cpp ')))

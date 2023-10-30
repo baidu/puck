@@ -41,10 +41,6 @@
 #include "puck/search_context.h"
 #include "puck/base/md5.h"
 
-#ifndef FINTEGER
-#define FINTEGER long
-#endif
-
 extern "C" {
 
     /* declare BLAS functions, see http://www.netlib.org/clapack/cblas/ */
@@ -386,6 +382,10 @@ int HierarchicalClusterIndex::read_feature_index(uint32_t* local_to_memory_idx) 
         if (err != 0) {
             std::runtime_error("alloc_aligned_mem_failed errno=" + errno);
             return -1;
+        }
+        if (_all_feature != nullptr) {
+            free(_all_feature);
+            _all_feature = nullptr;
         }
 
         _all_feature = reinterpret_cast<float*>(memb);
@@ -906,6 +906,10 @@ int HierarchicalClusterIndex::train(const u_int64_t kmenas_point_cnt, float* kme
         float err = kmeans_cluster.kmeans(_conf.feature_dim, kmenas_point_cnt, _conf.coarse_cluster_count,
                                           train_vocab.get(),
                                           coarse_init_vocab.get(), nullptr, cluster_assign.get());
+        if (err < 0){
+            LOG(ERROR) << "kmeans_cluster.kmeans failed";
+            return -1;
+        }
         LOG(INFO) << "deviation error of init coarse clusters is " << err << " when ite = " << ite;
 
         //计算残差
@@ -922,6 +926,10 @@ int HierarchicalClusterIndex::train(const u_int64_t kmenas_point_cnt, float* kme
         err = kmeans_cluster.kmeans(_conf.feature_dim, kmenas_point_cnt, _conf.fine_cluster_count,
                                     train_vocab.get(),
                                     fine_init_vocab.get(), nullptr, cluster_assign.get());
+        if (err < 0){
+            LOG(ERROR) << "kmeans_cluster.kmeans failed";
+            return -1;
+        }
         LOG(INFO) << ite << " deviation error of init fine clusters is " << err << " when ite = " << ite;
 
         //如果小于当前最小的deviation error，更新记录的S&T
@@ -1409,7 +1417,7 @@ int HierarchicalClusterIndex::train() {
     }
 
     if (train(FLAGS_train_points_count, kmeans_train_vocab.get()) != 0) {
-        return 1;
+        return -1;
     }
 
     return this->HierarchicalClusterIndex::save_coodbooks();
@@ -1515,7 +1523,7 @@ const float* HierarchicalClusterIndex::normalization(SearchContext* context, con
 
     if (_conf.ip2cos == 1) {
         uint32_t dim = _conf.feature_dim - 1;
-        memset(search_cell_data.query_norm, 0, _conf.feature_dim);
+        memset(search_cell_data.query_norm, 0, sizeof(float) * _conf.feature_dim);
         memcpy(search_cell_data.query_norm, feature, sizeof(float) * dim);
         return search_cell_data.query_norm;
     } else if (_conf.whether_norm) {

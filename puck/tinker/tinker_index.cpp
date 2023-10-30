@@ -181,7 +181,7 @@ int TinkerIndex::build() {
     convert_local_to_memory_idx(cell_start_memory_idx.data(), local_to_memory_idx.data());
     similarity::ObjectVector object_data(_conf.total_point_count);
     size_t datalength = _conf.feature_dim * sizeof(float);
-
+    /*
     std::ifstream data_stream;
     data_stream.open(_conf.feature_file_name.c_str(), std::ios::binary);
     std::vector<float> temp_data_fea(_conf.feature_dim);
@@ -202,11 +202,26 @@ int TinkerIndex::build() {
         object_data[memory_idx] = cur_object;
     }
     data_stream.close();
-    
+    */
+
+    if (this->HierarchicalClusterIndex::read_feature_index(local_to_memory_idx.data()) != 0) {
+        return -1;
+    }
+    for (uint64_t i = 0; i < object_data.size(); ++i) {
+        similarity::Object* cur_object = new similarity::Object((char*)(_all_feature + i * _conf.feature_dim));
+        object_data[i] = cur_object;
+        object_data[i]->data_length_ = datalength;
+    }
+
     _tinker_index.reset(new similarity::Hnsw<float>(*_space.get(), object_data));
+    _tinker_index->SetGroupInfo(cell_start_memory_idx.size(), cell_start_memory_idx.data());
     _tinker_index->CreateIndex(*_any_params.get());
     std::string tinker_index_file = _conf.index_path + "/" + puck::FLAGS_tinker_file_name;
     _tinker_index->SaveIndex(tinker_index_file);
+
+    object_data.clear();
+    object_data.shrink_to_fit();
+
     return 0;
 }
 }//tinker
