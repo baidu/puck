@@ -238,7 +238,7 @@ int MultiBriefPuckIndex::search_nearest_filter_points(
     float* coarse_distance = search_cell_data.coarse_distance;
     uint32_t* coarse_tag = search_cell_data.coarse_tag;
     //过滤阈值
-    float pivot = coarse_distance[_conf.search_coarse_count - 1];
+    float pivot = coarse_distance[true_coarse_cnt - 1];
 
     //堆结构
     float* result_distance = context->get_search_point_data().result_distance;
