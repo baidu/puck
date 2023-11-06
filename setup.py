@@ -25,6 +25,7 @@ class CMakeExtension(Extension):
 
 
 class CMakeBuild(build_ext):
+
     def build_extension(self, ext: CMakeExtension) -> None:
         """
         根据指定的CMake扩展进行构建。
@@ -41,7 +42,6 @@ class CMakeBuild(build_ext):
         print("ext_fullpath = ", ext_fullpath)
         extdir = ext_fullpath.parent.resolve()
         print("extdir=",extdir)
-
         cfg = "Release"
         bin_full_path = Path.cwd() / self.get_ext_fullpath(ext.name).split("/")[0] / "output"
         print(bin_full_path)
@@ -69,7 +69,8 @@ class CMakeBuild(build_ext):
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
         
-        print(ext.sourcedir,cmake_args, build_temp )
+        print(ext.sourcedir, cmake_args, build_temp )
+
         subprocess.run(
             ["cmake", "-DUSE_PYTHON=True", ext.sourcedir] + cmake_args, cwd=build_temp, check=True
         )
@@ -84,6 +85,7 @@ class CMakeBuild(build_ext):
 
 
 class InstallCMakeLibs(install_lib):
+
     def run(self):
         """
         重写父类方法，执行移动库文件操作。

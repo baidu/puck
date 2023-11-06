@@ -116,6 +116,10 @@ protected:
      **/
     virtual int compute_quantized_distance(SearchContext* context, const FineCluster*, const float cell_dist,
                                            MaxHeap& result_heap);
+
+    virtual int compute_quantized_distance(SearchContext* context, const int cell_idx,
+                                           const float* pq_dist_table, MaxHeap& result_heap);
+
     /*
      * @brief 计算query与部分样本的距离(query与filter特征的topN个样本）
      * @@param [in\out] context : context由内存池管理

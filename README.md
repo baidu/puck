@@ -1,3 +1,8 @@
+
+Puck & Tinker 一种ANN检索技术，支撑构建超大规模高维度低时延高吞吐的检索系统。
+开源库puck，提供纯净的ANN检索代码。
+详细文档：https://ku.baidu-int.com/knowledge/HFVrC7hq1Q/pKzJfZczuc/nT0Tf16CUS/UNUJyiP9P3Qu3X
+
 ## Description
 This project is a library for approximate nearest neighbor(ANN) search named Puck.
 In Industrial deployment scenarios, limited memory, expensive computer resources and increasing database size are as important as the recall-vs-latency tradeof for all search applications.

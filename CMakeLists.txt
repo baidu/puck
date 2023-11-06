@@ -19,7 +19,8 @@ set(CMAKE_C_FLAGS "-std=c++11 -w -g0 -Ofast -fPIC")
 add_definitions(-DFINTEGER=int)
 
 add_compile_options(-fopenmp -lpthread -lcrypto -lrt -lgfortran -ldl -lz -fPIC -rdynamic)
-add_compile_options(-Ofast -g -pipe -fPIC -march=native -w)
+
+add_compile_options(-Ofast -g -pipe -fPIC -march=native -w -mavx -mavx2 -msse4)
 
 include(${PROJECT_SOURCE_DIR}/cmake/gflags.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/glog.cmake)

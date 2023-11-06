@@ -343,6 +343,15 @@ int PuckIndex::init_model_memory() {
     return 0;
 }
 
+
+int PuckIndex::compute_quantized_distance(SearchContext* context, const int cell_idx,
+        const float* pq_dist_table, MaxHeap& result_heap) {
+    SearchCellData& search_cell_data = context->get_search_cell_data();
+    const FineCluster* cur_fine_cluster = search_cell_data.cell_distance[cell_idx].second.first;
+    return compute_quantized_distance(context, cur_fine_cluster, search_cell_data.cell_distance[cell_idx].first,
+                                      result_heap);
+}
+
 int PuckIndex::compute_quantized_distance(SearchContext* context, const FineCluster* cur_fine_cluster,
         const float cell_dist, MaxHeap& result_heap) {
     float* result_distance = result_heap.get_top_addr();

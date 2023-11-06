@@ -86,6 +86,7 @@ int PySearcher::build(uint32_t total_cnt) {
 int PySearcher::init() {
 
     puck::IndexType index_type = puck::load_index_type();
+
     if (index_type == puck::IndexType::TINKER) { //Tinker
         LOG(INFO) << "init index of Tinker";
         _index.reset(new puck::TinkerIndex());
