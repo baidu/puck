@@ -6,9 +6,6 @@ RUN cp azcopy_folder/azcopy /usr/bin
 
 WORKDIR /home/app
 RUN pip3 install -U pip
-RUN pip3 config set global.index-url http://pip.baidu.com/root/baidu/+simple/
-RUN pip3 config set global.index http://pip.baidu.com/root/baidu/
-RUN pip3 config set global.trusted-host pip.baidu.com
 COPY requirements.txt run_algorithm.py ./
 RUN pip3 install -r requirements.txt --default-timeout=1200
 
