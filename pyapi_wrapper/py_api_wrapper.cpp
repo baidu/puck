@@ -168,6 +168,5 @@ int PySearcher::search(uint32_t n, const float* query_fea, const uint32_t topk, 
 
     return 0;
 }
-
 PySearcher::~PySearcher() {};
 };//namespace py_puck_api
