@@ -154,7 +154,6 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn
 int PySearcher::search(uint32_t n, const float* query_fea, const uint32_t topk, float* distance,
                        uint32_t* labels) {
 
-    /*
     ParallelFor(0, n, puck::FLAGS_context_initial_pool_size, [&](int id, int threadId) {
         (void)threadId;
         puck::Request request;
@@ -165,20 +164,7 @@ int PySearcher::search(uint32_t n, const float* query_fea, const uint32_t topk, 
         response.distance = distance + id * topk;
         response.local_idx = labels + id * topk;
         _index->search(&request, &response);
-    });*/
-
-    #pragma omp parallel for schedule(dynamic, 1) default(none) shared(n, query_fea, topk, distance, labels)  
-    for (int64_t id = 0; id < (int64_t)n; id++)
-    {
-        puck::Request request;
-        puck::Response response;
-        request.topk = topk;
-        request.feature = query_fea + id * _dim;
-
-        response.distance = distance + id * topk;
-        response.local_idx = labels + id * topk;
-        _index->search(&request, &response);
-    }
+    });
 
     return 0;
 }
