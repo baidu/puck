@@ -69,6 +69,8 @@ struct IndexConf {
     std::string pq_data_file_name;
     std::string index_path;
     //tinker的检索参数
+    uint32_t tinker_neighborhood;
+    uint32_t tinker_construction;
     uint32_t tinker_search_range;
 
     IndexConf();

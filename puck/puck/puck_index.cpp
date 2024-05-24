@@ -568,7 +568,7 @@ int PuckIndex::search(const Request* request, Response* response) {
         LOG(ERROR) << "init search context has error.";
         return -1;
     }
-
+    context->set_request(request);
     const float* feature = normalization(context.get(), request->feature);
     //输出query与一级聚类中心的top-search-cell个ID和距离
     int ret = search_nearest_coarse_cluster(context.get(), feature,

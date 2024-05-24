@@ -91,6 +91,8 @@ IndexConf::IndexConf() {
     pq_data_file_name = index_path + "/" + FLAGS_pq_data_file_name;
 
     index_type = IndexType::PUCK;
+    tinker_neighborhood = FLAGS_tinker_neighborhood;
+    tinker_construction = FLAGS_tinker_construction;
     tinker_search_range = FLAGS_tinker_search_range;
 }
 
