@@ -190,7 +190,7 @@ sh script/puck_train_control.sh -t
 sh script/puck_train_control.sh -b
 ````
 ## 检索 ##
-&ensp;&ensp;&ensp;&ensp;创建索引的实例后，通过init()方法加载索引，search检索最近的topk个样本，获得相似度（distance）和样本的local idx（建库顺序）。response内的distance、local_idx生命周期自行维护。可参考[demo](./demo/search_client.cpp)文件。
+&ensp;&ensp;&ensp;&ensp;创建索引的实例后，通过init()方法加载索引，search检索最近的topk个样本，获得相似度（distance）和样本的local idx（建库顺序）。response内的distance、local_idx生命周期自行维护。可参考[demo](../demo/search_client.cpp)文件。
 
 &ensp;&ensp;&ensp;&ensp;检索API如下。
 
@@ -215,7 +215,7 @@ int search(const Request* request, Response* response);
 ## 实时入库 ##
 &ensp;&ensp;&ensp;&ensp;部分场景会需要实时插入数据功能，请创建RealtimeInsertPuckIndex，并调用insert方法。insert的数据先落盘再写入内存，当insert成功时保证数据磁盘和内存都写入成功。
 
-&ensp;&ensp;&ensp;&ensp;可参考[demo](./demo/insert_demo.cpp)文件。
+&ensp;&ensp;&ensp;&ensp;可参考[demo](../demo/insert_demo.cpp)文件。
 
 核心api如下：
 ````c++
