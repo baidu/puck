@@ -10,7 +10,7 @@ Since then, performance of Puck has increased by 70%.
 Puck includes a two-layered architectural design for inverted indices and a multi-level quantization on the dataset.
 If the memory is going to be a bottleneck, Puck could resolve your problems.  
 Tinker is an efficient approache for smaller dataset(like 10M, 100M), which has better performance than Nmslib in big-ann-benchmarks. 
-The relationships among similarity points are well thought out, Tinker need more memory to save these. Thinker cost more memory then Puck, but has better performace than Puck. If you want a better searching performance and need not concerned about memory used, Tinker is a better choiese.
+The relationships among similarity points are well thought out, Tinker needs more memory to save these. Thinker costs more memory then Puck, but has better performace than Puck. If you want a better searching performance and are not concerned about memory used, Tinker is a better choice.
 
 ## Introduction
 
@@ -19,9 +19,9 @@ When two vectors are normalized, L2 distance is equal to 2 - 2 * cos.
 IP2COS is a transform method that convert IP distance to cos distance.
 The distance value in search result is always L2.  
 
-Puck use a compressed vectors(after PQ) instead of the original vectors, the memory cost just over to 1/4 of the original vectors by default.
+Puck uses a compressed vectors(after PQ) instead of the original vectors, the memory cost is just over to 1/4 of the original vectors by default.
 With the increase of datasize, Puck's advantage is more obvious.  
-Tinker need save relationships of similarity points, the memory cost is more than the original vectors (less than Nmslib) by default.
+Tinker's needs save relationships of similarity points, the memory cost is more than the original vectors (less than Nmslib) by default.
 More performance details in benchmarks. Please see [this readme](./ann-benchmarks/README.md) for more details.
 
 ## Linux install
