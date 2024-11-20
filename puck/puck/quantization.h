@@ -172,7 +172,7 @@ private:
     int _per_fea_len;
     QuantizationParams _params;
     std::unique_ptr<float[]> _coodbooks;
-    std::unique_ptr<unsigned char[]> _quantized_feature;
+    std::unique_ptr<unsigned char[], decltype(&free)> _quantized_feature;
 };
 
 }//namespace puck

@@ -39,9 +39,10 @@ void QuantizationParams::show() {
               << ", QuantizationParams.lsq = " << lsq << ", QuantizationParams.nsq = " << nsq;
 }
 
-Quantization::Quantization(const QuantizationParams& params,
-                           uint32_t point_count) : _per_subspace_len(sizeof(char)),
-    _fea_offset(std::ceil(1.0 * sizeof(float) / _per_subspace_len)) {
+Quantization::Quantization(const QuantizationParams& params, uint32_t point_count) : 
+        _per_subspace_len(sizeof(char)), 
+        _quantized_feature(nullptr, &free),
+        _fea_offset(std::ceil(1.0 * sizeof(float) / _per_subspace_len)) {
     _params = params;
     _coodbooks.reset(nullptr);
     _quantized_feature.reset(nullptr);
