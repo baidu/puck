@@ -146,7 +146,7 @@ int Kmeans::kmeans_reassign_empty(uint32_t dim, size_t total_cnt, size_t k, floa
     return nreassign;
 }
 
-float Kmeans::kmeans(uint32_t dim, size_t total_cnt, size_t k,
+double Kmeans::kmeans(uint32_t dim, size_t total_cnt, size_t k,
                      const float* train_dataset,
                      float* centroids_out, float* dis_out,
                      int* assign_out) {

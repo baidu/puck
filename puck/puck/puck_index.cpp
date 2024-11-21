@@ -847,6 +847,7 @@ int PuckIndex::train() {
         std::unique_ptr<float[]> sub_resudial(new float[pq_train_points_count * cur_params.lsq]);
 
         for (uint32_t k = 0; k < (uint32_t)cur_params.nsq; k++) {
+            if(cur_params.dim < k * cur_params.lsq) continue;
             uint32_t cur_lsq = std::min(cur_params.lsq, cur_params.dim - k * cur_params.lsq);
             memset(sub_resudial.get(), 0, sizeof(float) * pq_train_points_count * cur_params.lsq);
 

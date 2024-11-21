@@ -47,7 +47,7 @@ public:
     Kmeans(): _rnd(time(0)) {}
     Kmeans(bool kmeans_pp): _params(kmeans_pp), _rnd(time(0)) {}
     ~Kmeans() {}
-    float kmeans(uint32_t dim, size_t n, size_t k,
+    double kmeans(uint32_t dim, size_t n, size_t k,
                  const float* v,
                  float* centroids_out, float* dis_out = nullptr,
                  int* assign_out = nullptr);

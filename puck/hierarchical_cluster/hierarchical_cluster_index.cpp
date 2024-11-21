@@ -887,7 +887,7 @@ int HierarchicalClusterIndex::train(const u_int64_t kmenas_point_cnt, float* kme
     //point属于的cluster id
     std::unique_ptr<int[]> cluster_assign(new int[kmenas_point_cnt]);
     //记录当前最小的deviation error
-    float min_err = std::numeric_limits<float>::max();
+    double min_err = std::numeric_limits<double>::max();
     //每次kmeans的训练数据
     std::unique_ptr<float[]> train_vocab(new float[kmenas_point_cnt * _conf.feature_dim]);
     memcpy(train_vocab.get(), kmeans_train_vocab, sizeof(float) * kmenas_point_cnt * _conf.feature_dim);
@@ -903,7 +903,7 @@ int HierarchicalClusterIndex::train(const u_int64_t kmenas_point_cnt, float* kme
 
     for (int ite = 0; ite < FLAGS_kmeans_iterations_count; ++ite) {
         //kmeans聚类得到一级聚类中心
-        float err = kmeans_cluster.kmeans(_conf.feature_dim, kmenas_point_cnt, _conf.coarse_cluster_count,
+        double err = kmeans_cluster.kmeans(_conf.feature_dim, kmenas_point_cnt, _conf.coarse_cluster_count,
                                           train_vocab.get(),
                                           coarse_init_vocab.get(), nullptr, cluster_assign.get());
         LOG(INFO) << "deviation error of init coarse clusters is " << err << " when ite = " << ite;
