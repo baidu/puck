@@ -45,6 +45,10 @@ struct QuantizationParams {
         dim = conf.feature_dim;
         nsq = (is_filter == false) ? conf.nsq : conf.filter_nsq;
         lsq = std::ceil(1.0 * dim / nsq);
+        while (lsq * (nsq - 1) >= dim)
+        {
+            nsq--;
+        }
         show();
         return 0;
     }
