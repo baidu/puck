@@ -6,6 +6,7 @@ file(
     "test_index_type.cpp"
     "test_index_recall.cpp"
     "test_main.cpp"
+    "test_quantization.cpp"
     "test_tinker.cpp"
 )
 

@@ -662,7 +662,10 @@ int PuckIndex::puck_assign(const ThreadParams& thread_params, uint32_t* cell_ass
             std::unique_ptr<float[]> sub_residual(new float[FLAGS_thread_chunk_size * cur_params.lsq]);
 
             for (uint32_t k = 0; k < (uint32_t)cur_params.nsq; ++k) {
-                uint32_t cur_lsq = std::min(cur_params.lsq, cur_params.dim - k * cur_params.lsq);
+                // k * lsq >= dim 时子空间为0维，钳为0避免无符号下溢导致的越界读写
+                uint32_t cur_lsq = (k * cur_params.lsq >= cur_params.dim)
+                                           ? 0
+                                           : std::min(cur_params.lsq, cur_params.dim - k * cur_params.lsq);
                 memset(sub_residual.get(), 0, FLAGS_thread_chunk_size * cur_params.lsq * sizeof(float));
 
                 for (uint32_t i = 0; i < real_thread_chunk_size; i++) {
@@ -849,7 +852,10 @@ int PuckIndex::train() {
         std::unique_ptr<float[]> sub_resudial(new float[pq_train_points_count * cur_params.lsq]);
 
         for (uint32_t k = 0; k < (uint32_t)cur_params.nsq; k++) {
-            uint32_t cur_lsq = std::min(cur_params.lsq, cur_params.dim - k * cur_params.lsq);
+            // k * lsq >= dim 时子空间为0维，钳为0避免无符号下溢导致的越界读写
+            uint32_t cur_lsq = (k * cur_params.lsq >= cur_params.dim)
+                                       ? 0
+                                       : std::min(cur_params.lsq, cur_params.dim - k * cur_params.lsq);
             memset(sub_resudial.get(), 0, sizeof(float) * pq_train_points_count * cur_params.lsq);
 
             for (uint32_t i = 0; i < pq_train_points_count; ++i) {

@@ -45,6 +45,11 @@ struct QuantizationParams {
         dim = conf.feature_dim;
         nsq = (is_filter == false) ? conf.nsq : conf.filter_nsq;
         lsq = std::ceil(1.0 * dim / nsq);
+        // 防止末个子空间为0维：lsq * (nsq - 1) >= dim 时收敛 nsq
+        while (lsq * (nsq - 1) >= dim)
+        {
+            nsq--;
+        }
         show();
         return 0;
     }
