@@ -22,7 +22,7 @@
  **/
 #pragma once
 #include <memory>
-#include "puck/index.h"
+#include "interface/index.h"
 
 namespace puck {
 class TestIndex {
@@ -30,10 +30,13 @@ public:
     TestIndex() {}
     ~TestIndex() {}
     int download_data();
+    int train_index(int index_type);
     int build_index(int index_type);
     int insert_index(int thread_cnt);
     float cmp_search_recall();
+    int search(const Request* request, Response* response);
 private:
+    int create_index(int index_type);
     std::unique_ptr<Index> _index;
     std::string _query_filename;
     std::string _groundtruth_filename;

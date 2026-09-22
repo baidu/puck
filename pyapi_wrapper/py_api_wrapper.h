@@ -24,21 +24,24 @@
 
 #include <iostream>
 #include <memory>
-#include "puck/index.h"
+#include "interface/index.h"
 namespace py_puck_api {
 
-void update_gflag(const char* gflag_key, const char* gflag_val);
+bool update_gflag(const char* gflag_key, const char* gflag_val);
 class PySearcher {
 public:
-    PySearcher();
-    void show();
-    int init();
-    int build(uint32_t n);
-    int search(uint32_t n, const float* query_fea,const uint32_t topk, float* distance, uint32_t* labels);
+    explicit PySearcher(int index_type);
+    int load();
+    int train();
+    int build();
+    int search(uint32_t n, const float* query_fea, uint32_t topk,
+               int64_t ef_search, float* distance, uint32_t* labels);
+    uint32_t dim() const;
     ~PySearcher();
 private:
+    int create_index(int index_type);
     std::unique_ptr<puck::Index> _index;
     uint32_t _dim;
+    puck::IndexType _index_type;
 };
 };//namespace py_puck_api
-

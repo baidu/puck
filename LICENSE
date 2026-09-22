@@ -204,10 +204,8 @@ Copyright (c) 2022 Baidu, Inc.  All Rights Reserved.
 
    PORTIONS LICENSED AS FOLLOWS
 
-   > puck/base/time.h
-   > puck/base/time.cpp
-   > puck/base/md5.h
-   > puck/base/md5.cpp
+   > common/base/time.h
+   > common/base/time.cpp
    > puck/simple_data_pool.h
 
       Copyright (c) 2010 baidu-rpc authors.
@@ -224,20 +222,26 @@ Copyright (c) 2022 Baidu, Inc.  All Rights Reserved.
       See the License for the specific language governing permissions and
       limitations under the License.
 
-   > puck/base/yaelbinheap.c
-   > puck/base/yaelbinheap.h
-   > puck/base/yaelkmeans.c
-   > puck/base/yaelkmeans.h
-   > puck/base/yaelmachinedeps.c
-   > puck/base/yaelmachinedeps.h
-   > puck/base/yaelmatrix.c
-   > puck/base/yaelmatrix.h
-   > puck/base/yaelnn.c
-   > puck/base/yaelnn.h
-   > puck/base/yaelsorting.c
-   > puck/base/yaelsorting.h
-   > puck/base/yaelvector.c
-   > puck/base/yaelvector.h
+   YAEL historical notice (retained pending provenance review).
+   The following entries were already present in the working-copy notice.
+   These files are not present in the current source tree; the entries do not
+   establish a migration to common/base or identify current derived files.
+   Whether YAEL-derived code remains has not been established.
+
+   > common/base/yaelbinheap.c
+   > common/base/yaelbinheap.h
+   > common/base/yaelkmeans.c
+   > common/base/yaelkmeans.h
+   > common/base/yaelmachinedeps.c
+   > common/base/yaelmachinedeps.h
+   > common/base/yaelmatrix.c
+   > common/base/yaelmatrix.h
+   > common/base/yaelnn.c
+   > common/base/yaelnn.h
+   > common/base/yaelsorting.c
+   > common/base/yaelsorting.h
+   > common/base/yaelvector.c
+   > common/base/yaelvector.h
 
       This library has been written and is maintained by Herve Jegou and Matthijs Douze. Contact: herve.jegou@inria.fr and matthijs.douze@inria.fr Copyright (C) INRIA 2009-2011 Last change to this documentation: September 2011.
 
@@ -245,22 +249,11 @@ Copyright (c) 2022 Baidu, Inc.  All Rights Reserved.
 
       INRIA may provide a licence for industrial applications. Do not hesitate to contact us.
 
-   > puck/tinker/idtype.h
-   > puck/tinker/index.h
-   > puck/tinker/object.h
-   > puck/tinker/params.h
-   > puck/tinker/portable_align.h
-   > puck/tinker/portable_intrinsics.h
-   > puck/tinker/portable_prefetch.h
-   > puck/tinker/portable_simd.h
-   > puck/tinker/pow.h
-   > puck/tinker/space.h
-   > puck/tinker/thread_pool.h
-   > puck/tinker/utils.h
-   > puck/tinker/method/hnsw.cc
-   > puck/tinker/method/hnsw_distfunc_opt_impl_inline.h
-   > puck/tinker/method/hnsw.h
-   > puck/tinker/space/space_lp.h
+   > common/simd/distance_l2_simd.h
+   > common/simd/portable_align.h
+   > common/simd/portable_intrinsics.h
+   > common/simd/portable_prefetch.h
+   > common/simd/portable_simd.h
 
       Non-metric Space Library
 
@@ -294,7 +287,7 @@ Copyright (c) 2022 Baidu, Inc.  All Rights Reserved.
       OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
       SOFTWARE.
       
-   > puck/puck/distances_simd.cpp
+   > puck/distances_simd.cpp
       MIT License
 
       Copyright (c) Facebook, Inc. and its affiliates.
@@ -316,3 +309,164 @@ Copyright (c) 2022 Baidu, Inc.  All Rights Reserved.
       LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
       OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
       SOFTWARE.
+
+   > common/base/md5.h
+   > common/base/md5.cpp
+
+      Chromium BSD 3-Clause License.
+      Source for the complete license text reproduced below:
+      https://raw.githubusercontent.com/chromium/chromium/16.0.912.63/LICENSE
+      The corresponding upstream base/md5.cc carries the same 2011 Chromium
+      notice and SQLite/Colin Plumb public-domain provenance as the local file:
+      https://raw.githubusercontent.com/chromium/chromium/16.0.912.63/base/md5.cc
+      This reference does not establish the exact revision originally imported.
+      The earlier baidu-rpc attribution is retained for any such contributions:
+      Copyright (c) 2010 baidu-rpc authors. (Apache License, Version 2.0 above.)
+      It does not replace the Chromium notice and BSD terms.
+
+      Copyright (c) 2011 The Chromium Authors. All rights reserved.
+
+      Redistribution and use in source and binary forms, with or without
+      modification, are permitted provided that the following conditions are
+      met:
+
+      * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+      * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following disclaimer
+      in the documentation and/or other materials provided with the
+      distribution.
+      * Neither the name of Google Inc. nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+
+      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+      "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+      LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+      A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+      OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+      SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+      LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+      DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+      THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+      (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+      OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+      Additional provenance retained from common/base/md5.cpp:
+      The original file was copied from sqlite, and was in the public domain.
+      This code implements the MD5 message-digest algorithm.
+      The algorithm is due to Ron Rivest. This code was written by Colin Plumb
+      in 1993, no copyright is claimed. This code is in the public domain;
+      do with it what you wish.
+
+   > pyapi_wrapper/numpy.i
+
+      The following BSD 3-Clause notice is reproduced from this file.
+
+      Copyright (c) 2005-2015, NumPy Developers.
+      All rights reserved.
+
+      Redistribution and use in source and binary forms, with or without
+      modification, are permitted provided that the following conditions are
+      met:
+
+          * Redistributions of source code must retain the above copyright
+             notice, this list of conditions and the following disclaimer.
+
+          * Redistributions in binary form must reproduce the above
+             copyright notice, this list of conditions and the following
+             disclaimer in the documentation and/or other materials provided
+             with the distribution.
+
+          * Neither the name of the NumPy Developers nor the names of any
+             contributors may be used to endorse or promote products derived
+             from this software without specific prior written permission.
+
+      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+      "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+      LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+      A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+      OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+      SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+      LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+      DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+      THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+      (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+      OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+      Scope note: the separate headers under pyapi_wrapper/numpy/ have not
+      been matched to an exact upstream release. The 2005-2015 copyright
+      range above is verified for numpy.i only, not for all bundled headers.
+      Header provenance and release-specific notices remain to be verified.
+
+   > cmake/gflags.cmake
+   > cmake/glog.cmake
+
+      Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+
+      These notices cover the CMake scripts, not the gflags and glog libraries
+      downloaded by them, which retain their own upstream licenses.
+
+   > cmake/FindMKL.cmake
+
+      Copyright (c) Facebook, Inc. and its affiliates.
+      All rights reserved.
+
+      The file header states that the Facebook portions use a BSD-style
+      license in the upstream root LICENSE, and that the file is adapted from
+      CMake's FindBLAS module under the BSD 3-Clause License.
+      A matching upstream FindMKL header can be inspected at:
+      https://raw.githubusercontent.com/facebookresearch/faiss/v1.7.2/cmake/FindMKL.cmake
+      However, that release's root LICENSE is MIT:
+      https://raw.githubusercontent.com/facebookresearch/faiss/v1.7.2/LICENSE
+      The exact imported revision and the inconsistent Facebook license
+      reference remain to be resolved; no Facebook BSD terms are inferred.
+
+      The CMake-derived portions are covered by the following BSD 3-Clause
+      notice, reproduced from CMake v3.17.0 as a verifiable license reference:
+      https://raw.githubusercontent.com/Kitware/CMake/v3.17.0/Copyright.txt
+      This reference does not identify the exact CMake revision adapted.
+      See also https://cmake.org/licensing/.
+
+      CMake - Cross Platform Makefile Generator
+      Copyright 2000-2020 Kitware, Inc. and Contributors
+      All rights reserved.
+
+      Redistribution and use in source and binary forms, with or without
+      modification, are permitted provided that the following conditions
+      are met:
+
+      * Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+
+      * Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+
+      * Neither the name of Kitware, Inc. nor the names of Contributors
+        may be used to endorse or promote products derived from this
+        software without specific prior written permission.
+
+      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+      "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+      LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+      A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+      HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+      SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+      LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+      DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+      THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+      (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+      OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

@@ -7,8 +7,8 @@
  ***********************************************************************/
 
 #include <glog/logging.h>
-#include "puck/puck/puck_index.h"
-#include "puck/puck/realtime_insert_puck_index.h"
+#include "puck/puck_index.h"
+#include "puck/realtime_insert_puck_index.h"
 #include "tools/string_split.h"
 
 
@@ -120,6 +120,7 @@ int main(int argc, char** argv) {
     puck::Request request;
     puck::Response response;
     request.topk = 100;
+    request.ef_search = 500;  // Explicit per-request Tinker width; ignored by HC/Puck.
 
     response.distance = new float[request.topk];
     response.local_idx = new uint32_t[request.topk];
@@ -133,7 +134,7 @@ int main(int argc, char** argv) {
             break;
         }
 
-        for (int j = 0; j < (int)response.result_num; j ++) {
+        for (uint32_t j = 0; j < response.result_num; j ++) {
             char* p = buff;
             std::string lable;
 
@@ -187,7 +188,7 @@ int main(int argc, char** argv) {
             break;
         }
 
-        for (int j = 0; j < (int)response.result_num; j ++) {
+        for (int32_t j = 0; j < response.result_num; j ++) {
             char* p = buff;
             std::string lable;
 

@@ -1,29 +1,32 @@
 include_directories(../)
 file(
     GLOB PUCK_CPP_FILES
-    "./base/*.cpp"
-    "./gflags/*.cpp"
-    "./hierarchical_cluster/*.cpp"
-    "./puck/*.cpp"
-    "./tinker/*.cpp"
-    "./tinker/*/*.cc"
     "./*.cpp"
+    "../common/base/*.cpp"
+    "../gflags/*.cpp"
+    "../hierarchical_cluster/*.cpp"
+    "../interface/*.cpp"
 )
 file(
     GLOB PUCK_HEAD_FILES
-    "./base/*.h"
-    "./gflags/*.h"
-    "./hierarchical_cluster/*.h"
-    "./puck/*.h"
-    "./tinker/*.h"
-    "./tinker/*/*.h"
     "./*.h"
+    "../common/base/*.h"
+    "../common/simd/*.h"
+    "../gflags/*.h"
+    "../hierarchical_cluster/*.h"
+    "../interface/*.h"
 )
 
-add_library(puck ${PUCK_CPP_FILES})
+add_library(puck
+    ${PUCK_CPP_FILES}
+    $<TARGET_OBJECTS:quantizer>
+    $<TARGET_OBJECTS:tinker>
+)
 
 target_include_directories(puck PUBLIC
-$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
 
 set_target_properties(puck PROPERTIES
 POSITION_INDEPENDENT_CODE ON
@@ -36,6 +39,7 @@ target_link_libraries(puck PUBLIC glog)
     
 target_link_libraries(puck PUBLIC OpenMP::OpenMP_CXX)
 target_link_libraries(puck PUBLIC ${MKL_LIBRARIES})
+target_link_libraries(puck PUBLIC Threads::Threads)
 
 
 set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)

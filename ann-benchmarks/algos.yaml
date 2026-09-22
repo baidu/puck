@@ -677,7 +677,7 @@ deep-10M:
     #            ]
     vamanapy-1:
       docker-tag: billion-scale-benchmark-vamanapy
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: Vamana
       base-args: ["@metric"]
       run-groups:
@@ -687,7 +687,7 @@ deep-10M:
     
     vamanapy-2:
       docker-tag: billion-scale-benchmark-vamanapy
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: Vamana
       base-args: ["@metric"]
       run-groups:
@@ -697,7 +697,7 @@ deep-10M:
     
     vamanapy-3:
       docker-tag: billion-scale-benchmark-vamanapy
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: Vamana
       base-args: ["@metric"]
       run-groups:
@@ -707,7 +707,7 @@ deep-10M:
     
     vamanapy-4:
       docker-tag: billion-scale-benchmark-vamanapy
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: Vamana
       base-args: ["@metric"]
       run-groups:
@@ -717,7 +717,7 @@ deep-10M:
                  
     vamanapy_pq-1:
       docker-tag: billion-scale-benchmark-vamana_pq
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: VamanaPQ
       base-args: ["@metric"]
       run-groups:
@@ -725,6 +725,38 @@ deep-10M:
           args: [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.2,  'chunks': 96}]
           query-args: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
     
+
+    diskann:
+      docker-tag: billion-scale-benchmark-diskann_inmem
+      module: benchmark.algorithms.diskann_inmem
+      constructor: diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+            [{"R":32, "L":640, "buildthreads":86}]
+          query-args: |
+            [{"Ls":100, "T":32},
+            {"Ls":105, "T":32},
+            {"Ls":110, "T":32},
+            {"Ls":120, "T":32},
+            {"Ls":130, "T":32},
+             {"Ls":150, "T":32},
+             {"Ls":170, "T":32},
+             {"Ls":200, "T":32},
+
+             {"Ls":230, "T":32},
+             {"Ls":250, "T":32},
+             {"Ls":270, "T":32},
+             {"Ls":300, "T":32},
+
+             {"Ls":330, "T":32},
+             {"Ls":350, "T":32},
+             {"Ls":370, "T":32},
+             {"Ls":400, "T":32}
+            ]
+
+
 deep-1B:
     faiss-t1:
       docker-tag: billion-scale-benchmark-faissconda
@@ -1712,7 +1744,38 @@ bigann-10M:
 #              [{"R":100, "L":100, "B":0.3, "M":15}]
 #          query-args: |
 #              [{"Ls":50, "BW":4, "T":16}]
-#
+# 
+
+diskann:
+      docker-tag: billion-scale-benchmark-diskann_inmem
+      module: benchmark.algorithms.diskann_inmem
+      constructor: diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+            [{"R":32, "L":640, "buildthreads":86}]
+          query-args: |
+            [{"Ls":100, "T":32},
+            {"Ls":105, "T":32},
+            {"Ls":110, "T":32},
+            {"Ls":120, "T":32},
+            {"Ls":130, "T":32},
+             {"Ls":150, "T":32},
+             {"Ls":170, "T":32},
+             {"Ls":200, "T":32},
+
+             {"Ls":230, "T":32},
+             {"Ls":250, "T":32},
+             {"Ls":270, "T":32},
+             {"Ls":300, "T":32},
+
+             {"Ls":330, "T":32},
+             {"Ls":350, "T":32},
+             {"Ls":370, "T":32},
+             {"Ls":400, "T":32}
+            ]
+
 
 
 bigann-100M:
@@ -1978,7 +2041,7 @@ bigann-100M:
                 ]
     vamanapy-1:
       docker-tag: billion-scale-benchmark-vamanapy
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: Vamana
       base-args: ["@metric"]
       run-groups:
@@ -1988,7 +2051,7 @@ bigann-100M:
     
     vamanapy-2:
       docker-tag: billion-scale-benchmark-vamanapy
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: Vamana
       base-args: ["@metric"]
       run-groups:
@@ -1998,7 +2061,7 @@ bigann-100M:
     
     vamanapy-3:
       docker-tag: billion-scale-benchmark-vamanapy
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: Vamana
       base-args: ["@metric"]
       run-groups:
@@ -2008,7 +2071,7 @@ bigann-100M:
     
     vamanapy-4:
       docker-tag: billion-scale-benchmark-vamanapy
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: Vamana
       base-args: ["@metric"]
       run-groups:
@@ -2018,7 +2081,7 @@ bigann-100M:
                  
     vamanapy_pq-1:
       docker-tag: billion-scale-benchmark-vamana_pq
-      module: benchmark.algorithms.diskann_inmem
+      module: benchmark.algorithms.vamanapy
       constructor: VamanaPQ
       base-args: ["@metric"]
       run-groups:
@@ -2026,6 +2089,42 @@ bigann-100M:
           args: [{'l_build': 100, 'max_outdegree': 64, 'alpha': 1.2,  'chunks': 96}]
           query-args: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]]
     
+
+    diskann:
+      docker-tag: billion-scale-benchmark-diskann_inmem
+      module: benchmark.algorithms.diskann_inmem
+      constructor: diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+            [{"R":32, "L":640, "buildthreads":86}]
+          query-args: |
+            [{"Ls":100, "T":32},
+            {"Ls":105, "T":32},
+            {"Ls":110, "T":32},
+            {"Ls":120, "T":32},
+            {"Ls":130, "T":32},
+             {"Ls":150, "T":32},
+             {"Ls":170, "T":32},
+             {"Ls":200, "T":32},
+
+             {"Ls":230, "T":32},
+             {"Ls":250, "T":32},
+             {"Ls":270, "T":32},
+             {"Ls":300, "T":32},
+
+             {"Ls":330, "T":32},
+             {"Ls":350, "T":32},
+             {"Ls":370, "T":32},
+             {"Ls":400, "T":32},
+             {"Ls":600, "T":32},
+             {"Ls":800, "T":32},
+             {"Ls":1000, "T":32},
+             {"Ls":1200, "T":32},
+             {"Ls":1400, "T":32}
+            ]
+
 
 deep-100M:
     faiss-IVF:
@@ -2292,7 +2391,43 @@ deep-100M:
                   {"search_coarse_count":10, "tinker_search_range": 1300},
                   {"search_coarse_count":10, "tinker_search_range": 1500}
                 ]
-    
+    diskann:
+      docker-tag: billion-scale-benchmark-diskann_inmem
+      module: benchmark.algorithms.diskann_inmem
+      constructor: diskann
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: |
+            [{"R":32, "L":640, "buildthreads":86}]
+          query-args: |
+            [{"Ls":100, "T":32},
+            {"Ls":105, "T":32},
+            {"Ls":110, "T":32},
+            {"Ls":120, "T":32},
+            {"Ls":130, "T":32},
+             {"Ls":150, "T":32},
+             {"Ls":170, "T":32},
+             {"Ls":200, "T":32},
+
+             {"Ls":230, "T":32},
+             {"Ls":250, "T":32},
+             {"Ls":270, "T":32},
+             {"Ls":300, "T":32},
+
+             {"Ls":330, "T":32},
+             {"Ls":350, "T":32},
+             {"Ls":370, "T":32},
+             {"Ls":400, "T":32},
+
+             {"Ls":600, "T":32},
+             {"Ls":800, "T":32},
+             {"Ls":1000, "T":32},
+             {"Ls":1200, "T":32},
+             {"Ls":1400, "T":32}
+            ]
+
+
 msturing-1M:
    diskann-t2:
       docker-tag: billion-scale-benchmark-diskann
@@ -2342,55 +2477,3 @@ text2image-10M:
               [{"R":50, "L":50, "B":0.3, "M":10, "PQ":200}]
           query-args: |
               [{"Ls":50, "BW":4, "T":16}]
-
-
-search-vip-300w:
-    #brute-force:
-    #  docker-tag: billion-scale-benchmark-faissconda
-    #  module: benchmark.algorithms.faiss_inmem
-    #  constructor: FaissIndexFlat
-    #  base-args: ["@metric"]
-    #  run-groups:
-    #    base:
-    #      args: [{"indexkey": "Flat"}]
-    #      query-args: |
-    #          []
-    nmslib-inmem:
-      docker-tag: billion-scale-benchmark-nmslib
-      module: benchmark.algorithms.nmslib_inmem
-      constructor: NmslibHnsw
-      base-args: ["@metric"]
-      run-groups:
-        base:
-          args: [{"M": 54,"efConstruction": 200, "indexThreadQty":64}]
-          query-args: |
-              [
-                "efSearch=50",
-                "efSearch=55",
-                "efSearch=60",
-                "efSearch=65",
-                "efSearch=70",
-                "efSearch=75"  ]
-
-    tinker-inmem-M16:
-      docker-tag: billion-scale-benchmark-puck_inmem
-      module: benchmark.algorithms.puck_inmem
-      constructor: Puck
-      base-args: ["@metric"]
-      run-groups:
-        base:
-          args: [{"index_type":2, "C":200, "F":200,"tinker_neighborhood":16,"tinker_construction":600}]
-          query-args: |
-                [
-                  {"search_coarse_count":10, "tinker_search_range": 95},
-                  {"search_coarse_count":10, "tinker_search_range": 96},
-                  {"search_coarse_count":10, "tinker_search_range": 97},
-                  {"search_coarse_count":10, "tinker_search_range": 98},
-                  {"search_coarse_count":10, "tinker_search_range": 99},
-                  {"search_coarse_count":10, "tinker_search_range": 100},
-                  {"search_coarse_count":10, "tinker_search_range": 102},
-                  {"search_coarse_count":10, "tinker_search_range": 104},
-                  {"search_coarse_count":10, "tinker_search_range": 106},
-                  {"search_coarse_count":10, "tinker_search_range": 108},
-                  {"search_coarse_count":10, "tinker_search_range": 110}
-                ]

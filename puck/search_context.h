@@ -21,8 +21,8 @@
  **/
 #pragma once
 #include <vector>
-#include "puck/index_conf.h"
-#include "puck/index.h"
+#include "interface/index_conf.h"
+#include "interface/index.h"
 namespace puck {
 class FineCluster;
 //typedef std::vector<std::pair<float, FineCluster*>>
@@ -148,4 +148,3 @@ inline void SearchContext::log_push(const char* key, const char* fmt, ...) {
 */
 } //namesapce puck
 /* vim: set expandtab ts=4 sw=4 sts=4 tw=100: */
-

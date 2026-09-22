@@ -12,22 +12,27 @@ if(NOT GIT_URL)
     set(GIT_URL "https://github.com")
 endif()
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-std=c++11 -w -g0 -Ofast -fPIC")
-set(CMAKE_C_FLAGS "-std=c++11 -w -g0 -Ofast -fPIC")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_FLAGS "-w -g0 -Ofast -fPIC")
+set(CMAKE_C_FLAGS "-w -g0 -Ofast -fPIC")
 #add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 add_definitions(-DFINTEGER=int)
 
 add_compile_options(-fopenmp -lpthread -lcrypto -lrt -lgfortran -ldl -lz -fPIC -rdynamic)
-add_compile_options(-Ofast -g -pipe -fPIC -march=native -w)
+add_compile_options(-Ofast -g -pipe -fPIC -w -mavx2 -msse4)
 
 include(${PROJECT_SOURCE_DIR}/cmake/gflags.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/glog.cmake)
 
 find_package(OpenMP REQUIRED)
+find_package(Threads REQUIRED)
 find_package(MKL REQUIRED)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/output)
+add_subdirectory(quantizer)
+add_subdirectory(tinker)
 add_subdirectory(puck)
 add_subdirectory(demo)
 add_subdirectory(tools)
@@ -35,6 +40,8 @@ add_subdirectory(tools)
 # 是否编译gtest
 option (WITH_TESTING "Use gtest" OFF)
 if (WITH_TESTING)
+    include(CTest)
+    enable_testing()
     add_subdirectory(test)
 endif (WITH_TESTING)
 
@@ -55,5 +62,3 @@ if (USE_PYTHON)
     add_subdirectory(pyapi_wrapper)
 endif (USE_PYTHON)
 #
-
-

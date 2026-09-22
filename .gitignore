@@ -1,0 +1,57 @@
+# Python caches, virtual environments and packaging
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+*.egg
+/dist/
+.coverage
+.coverage.*
+htmlcov/
+
+# CMake and native build outputs
+/build/
+/build-*/
+/cmake-build-*/
+/output/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+compile_commands.json
+.ninja_deps
+.ninja_log
+build.ninja
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.pyd
+
+# SWIG-generated bindings (swig_run.sh)
+/py_puck_api/
+
+# Default local index and runtime logs
+/puck_index/
+/log/
+*.log
+
+# Editor and OS temporary files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Do not broadly ignore data, archives or binaries:
+# test/data/siftsmall.tar.gz is an intentional test fixture.

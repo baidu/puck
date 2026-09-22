@@ -44,8 +44,8 @@ cd puck
 ### 3.Use cmake to build this project.
 ##### 3.1 Build this project
 ````shell
-cmake -DCMAKE_BUILD_TYPE=Release 
-    -DMKLROOT=${MKLROOT} \
+cmake -DCMAKE_BUILD_TYPE=Release \
+    -DMKLROOT="${MKLROOT}" \
     -DBLA_VENDOR=Intel10_64lp_seq \
     -DBLA_STATIC=ON  \
     -B build .
@@ -55,8 +55,8 @@ cd build && make && make install
 ##### 3.2 Build with GTEST 
 Use conditional compilation variable named WITH_TESTING.
 ````shell
-cmake -DCMAKE_BUILD_TYPE=Release 
-    -DMKLROOT=${MKLROOT} \
+cmake -DCMAKE_BUILD_TYPE=Release \
+    -DMKLROOT="${MKLROOT}" \
     -DBLA_VENDOR=Intel10_64lp_seq \
     -DBLA_STATIC=ON  \
     -DWITH_TESTING=ON \
@@ -69,8 +69,38 @@ cd build && make && make install
 
 Refer to the [Dockerfile](./ann-benchmarks/install/Dockerfile.puck_inmem)
 ````shell
-python3 setup.py install 
+python3 setup.py install
 ````
+
+See the [Python API guide](docs/PYTHON_API.md) for the complete API,
+index parameters, and usage examples.
+
+The package exposes the three index implementations with the same lifecycle API:
+
+```python
+import numpy as np
+from baidu_puck import puck
+
+index = puck(
+    index_path="puck_index",
+    feature_file_name="all_data.feat.bin",
+    feature_dim=128,
+    coarse_cluster_count=100,
+    fine_cluster_count=100,
+    filter_nsq=32,
+    nsq=128,
+    filter_topk=110,
+    topk=100,
+)
+
+index.train()
+index.build()
+index.load()
+distances, labels = index.search(
+    np.asarray(queries, dtype=np.float32),
+    top=10,
+)
+```
 
 Output files are saved in build/output subdirectory by default.
 
