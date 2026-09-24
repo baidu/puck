@@ -1,83 +1,94 @@
 # Puck Python API benchmark
 
-本脚本测量真实 `baidu_puck.hierarchical_cluster/puck/tinker` 的
-`train()/build()/load()/search()`，不替换 native、不修改算法。
+本脚本测量 `baidu_puck.hierarchical_cluster/puck/tinker` 的
+`train()/build()/load()/search()` Python API 性能。
+默认使用 100 万条 32 维 db 向量和 1 万条独立 query 向量，统一 L2 归一化，
+以 L2 距离计算 recall@100，并比较 QPS、训练/建库耗时和搜索内存占用。
 
 ## 环境要求
 
-* Linux（依赖 `/proc` 与 `fcntl`）、Python 3.9+、NumPy。
-* 与当前 Python ABI 匹配、可导入的真实 baidu_puck SWIG/native 扩展。
-* FAISS CPU 可选：`auto` 优先用 `faiss.IndexFlatL2`，导入不可用时回退到精确 NumPy；
-  显式指定 `faiss` 不可用则报错。`plot` 阶段需要 Matplotlib。
-* 依赖延迟导入，`--help` 不需要这些依赖；脚本不安装或编译任何依赖。
+见dockerfile
 
 ## 运行步骤
 
-各阶段按 `prepare → train → build → search → plot` 顺序执行，每个阶段是独立子进程。
-以下变量指向绝对路径，在同一个 shell 中依次执行：
+
+先设置脚本和工作目录：
 
 ```bash
 BENCH=/path/to/puck/test/benchmark.py
-WORK=/path/to/puck/benchmark-smoke-v2
+WORK=/path/to/puck/benchmark
 python3 "$BENCH" --help
-python3 "$BENCH" prepare --work "$WORK" --smoke --train-threads 2 --build-threads 2
-python3 "$BENCH" train   --work "$WORK" --smoke --train-threads 2 --build-threads 2
-# 仅 build_threads 变化：此命令复用已完成训练缓存
-python3 "$BENCH" train   --work "$WORK" --smoke --train-threads 2 --build-threads 4
-python3 "$BENCH" build   --work "$WORK" --smoke --train-threads 2 --build-threads 4
-python3 "$BENCH" search  --work "$WORK" --smoke --train-threads 2 --build-threads 4
-python3 "$BENCH" plot    --work "$WORK" --smoke --train-threads 2 --build-threads 4
 ```
 
-* **smoke**：4096 db / 32 queries / 8×8 簇，仅用于验证流程，不用于性能评估。
-* **全量**：使用新的 WORK 绝对路径，并从每条命令去掉 `--smoke`；不要直接
-  把 smoke 目录用于全量。默认 db 1,000,000×32、query 10,000×32、recall@100，
-  GT 约 100 亿向量对，全量运行前须评估 CPU/内存/磁盘预算。
+### 1. prepare：准备数据和 ground truth
+
+```bash
+python3 "$BENCH" prepare --work "$WORK"
+```
+
+该阶段按配置生成随机 db/query 向量，统一做 L2 归一化，生成特征文件、query 文件和精确 Top-K ground truth，并将结果写入 `WORK/data/`，供后续训练阶段读取。
+
+### 2. train：码本训练
+
+```bash
+python3 "$BENCH" train --work "$WORK"
+```
+
+该阶段分别训练三种索引所需的模型数据：HC 训练层次聚类码本，
+Puck 在此基础上训练 PQ 码本，Tinker 准备并保存 FLAT 量化器配置，
+同时记录训练耗时，结果写入 `WORK/<engine>/train/`。
+
+### 3. build：构建索引
+
+```bash
+python3 "$BENCH" build --work "$WORK"
+```
+
+该阶段使用上一步训练得到的模型和数据库向量，为 HC、Puck、Tinker 分别建立可检索索引，并记录建库耗时。索引建立完成后，结果保存在 `WORK/<engine>/build/`，供下一阶段搜索使用。
+
+### 4. search：执行搜索 benchmark
+
+```bash
+python3 "$BENCH" search --work "$WORK" --search-threads 1
+```
+
+该阶段加载各引擎的 build 产物，按照配置扫描 HC、Puck、Tinker 的搜索参数组合，执行预热和多次正式搜索，计算每个参数点的 QPS、recall@K 和搜索 RSS，并生成搜索明细、重复测量结果和汇总 report。
+
+### 5. plot：绘制结果图
+
+```bash
+python3 "$BENCH" plot --work "$WORK"
+```
+
+该阶段读取 search 产生的 report，绘制 recall-QPS、recall-RSS 和 train/build 耗时图，在 recall-QPS 图中突出各引擎的 Pareto 前沿并标注搜索参数，最后将 PNG/SVG 图片写入 `WORK/plots/`。
+
+如只需重绘已有 report，可直接指定 report 路径：
+
+```bash
+python3 "$BENCH" plot --work "$WORK" --report /absolute/path/to/report
+```
+
+以下参数适用于上述各阶段：
+
+* `prepare` 默认需要为 1 万条查询向量分别计算与 100 万条数据库向量的距离，
+  共约 100 亿次距离计算，以获得精确近邻结果。该步骤耗时较长，请预留计算资源和磁盘空间；
+  数据准备完成后，后续训练、建库和搜索无需重新执行 `prepare`。
 * `--engines hc puck` 可选引擎子集，默认运行全部三个引擎。
-* `--search-threads` 默认 1，直接设置 native `context_initial_pool_size`，
-  不是 Python 线程池；train/build 线程可分别设置，默认取进程 affinity 内可用 CPU 数。
+* `--search-threads` 默认 1；train/build 线程可分别设置，默认取进程 affinity 内可用 CPU 数。
 
 ## 配置覆盖（可选）
 
 `--config /absolute/path/config.json` 严格嵌套覆盖默认配置，未知 key 报错；
-合并顺序：默认值 → `--smoke` 默认值 → JSON → 命令行线程参数。示例：
+未指定的字段保留默认值，命令行线程参数优先于 JSON。以下示例保留百万级数据规模，
+设置训练/建库线程数，并自定义搜索参数扫描范围：
 
 ```json
 {
-  "data": {"count": 4096, "queries": 32, "dim": 32, "seed": 1234, "k": 100},
-  "gt": {"backend": "numpy", "query_block": 16, "db_block": 1024, "threads": 2},
-  "cluster": {
-    "coarse_cluster_count": 8, "fine_cluster_count": 8,
-    "train_points_count": 4096, "kmeans_iterations_count": 2
-  },
-  "puck": {"nsq": 32, "filter_nsq": 8, "pq_train_points_count": 4096},
-  "runtime": {"train_threads": 2, "build_threads": 2, "search_threads": 1},
+  "runtime": {"train_threads": 16, "build_threads": 16, "search_threads": 1},
   "search": {
-    "hc": {"search_coarse_count": [4, 8], "neighbors_count": [512]},
-    "puck": {"search_coarse_count": [4, 8], "filter_topk": [200]},
-    "tinker": {"ef_search": [100, 200]}
+    "hc": {"search_coarse_count": [20, 50, 100, 200], "neighbors_count": [2000, 5000, 10000, 20000, 40000]},
+    "puck": {"search_coarse_count": [20, 50, 100, 200], "filter_topk": [200, 400, 800, 1600, 3200], "radius_rate": [1.05]},
+    "tinker": {"ef_search": [100, 200, 400, 800, 1600, 3200]}
   }
 }
 ```
-
-脚本运行前会校验配置，例如：簇数 ≤ 训练点数 ≤ db 数、PQ 训练点 ≥ 256、
-dim 可被 nsq/filter_nsq 整除、search_coarse_count ≤ 粗簇数、k ≤ count。
-维度变化时需同步调整 nsq/filter_nsq。
-
-## 缓存与重跑
-
-* 每个成功阶段按配置/线程/实现指纹缓存；重跑相同配置直接复用，不重新计算。
-* **强制重跑须使用新的 WORK**；脚本不提供 `--force`，不覆盖已有产物。
-* train 完成后再调整 `build_threads` 可复用训练缓存；改变 `train_threads`
-  会使 train/build 同时失效。search 线程数与搜索网格不影响 train/build。
-* 修改 benchmark 脚本本身不影响已生成的 data（prepare 缓存不依赖脚本指纹），
-  但 train/build/search 仍严格校验脚本/实现指纹，不匹配会报错而非静默重算。
-* plot 的配置必须与对应 search 一致；某阶段失败时查看该阶段的 `worker.log`。
-
-## 输出
-
-* 各阶段产物与 manifest 写入 WORK 下对应目录；report 与 plots 使用配置摘要
-  子目录，命令会打印绝对路径。
-* search 产出 CSV（search/stages/repeats 三表）与 JSON（配置、硬件、版本、
-  API flags、各 repeat 时间/QPS/recall/RSS）；plot 生成 PNG/SVG
-  （recall-QPS 含各引擎 Pareto 前沿、recall-RSS、train/build 柱状图）。

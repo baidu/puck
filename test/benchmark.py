@@ -8,6 +8,7 @@ See benchmark.md for measurement definitions and operational guidance.
 """
 
 import argparse
+import ctypes
 import csv
 import hashlib
 import importlib.metadata
@@ -65,7 +66,7 @@ def _defaults(smoke=False):
             "puck": {
                 "search_coarse_count": [4, 8] if smoke else [20, 50, 100, 200],
                 "filter_topk": [200] if smoke else [200, 400, 800, 1600, 3200],
-                "radius_rate": [1.0],
+                "radius_rate": [1.05],
             },
             "tinker": {"ef_search": [100, 200] if smoke else [100, 200, 400, 800, 1600, 3200]},
         },
@@ -173,29 +174,24 @@ def _inventory(directory):
     }
 
 
-def _cached(directory, identity, compatible_identities=(), compatible_identity_predicate=None):
-    """Validate a cache identity and every recorded file before reuse."""
-    if not directory.exists():
-        return False
+def _validate_artifact(directory, required_files=(), required_directories=()):
+    """Validate an upstream artifact without comparing execution identities."""
+    directory = Path(directory)
+    if not directory.is_dir():
+        raise ValueError(f"missing upstream artifact: {directory}")
     manifest = directory / "manifest.json"
     if not manifest.is_file():
-        raise ValueError(f"incomplete cache: {directory}; use a new work directory")
+        raise ValueError(f"incomplete upstream artifact: {directory}")
     saved = _read_json(manifest)
-    identities = (identity,) + tuple(compatible_identities)
-    identity_matches = saved["identity"] in identities
-    if not identity_matches and compatible_identity_predicate is not None:
-        identity_matches = compatible_identity_predicate(saved["identity"])
-    if not identity_matches:
-        raise ValueError(f"cache mismatch: {directory}; no overwrite; use a new work directory")
-    if saved["files"] != _inventory(directory):
-        raise ValueError(f"cache contents changed: {directory}")
-    result_file = directory / "result.json"
-    if result_file.is_file():
-        for name, digest in _read_json(result_file).get("native", {}).get("module_sha256", {}).items():
-            path = Path(name)
-            if not path.is_file() or _file_hash(path) != digest:
-                raise ValueError(f"native/API module changed since measurement: {path}; use a new work directory")
-    return True
+    if saved.get("files") != _inventory(directory):
+        raise ValueError(f"upstream artifact contents changed: {directory}")
+    for name in required_files:
+        if not (directory / name).is_file():
+            raise ValueError(f"missing upstream file: {directory / name}")
+    for name in required_directories:
+        if not (directory / name).is_dir():
+            raise ValueError(f"missing upstream directory: {directory / name}")
+    return saved
 
 
 def _begin(directory):
@@ -205,11 +201,26 @@ def _begin(directory):
     return temporary
 
 
-def _commit(temporary, directory, identity):
-    _write_json(temporary / "manifest.json", {"identity": identity, "files": _inventory(temporary)})
-    if directory.exists():
-        raise FileExistsError(f"refusing to overwrite {directory}")
-    temporary.rename(directory)
+def _commit(temporary, directory):
+    """Publish using Linux RENAME_EXCHANGE; keep old artifacts without deleting data."""
+    _write_json(temporary / "manifest.json", {"schema": SCHEMA, "files": _inventory(temporary)})
+    if not directory.exists():
+        os.replace(temporary, directory)
+        return
+    # Two renames via a backup leave a visibility/crash gap. Exchange has none.
+    libc = ctypes.CDLL(None, use_errno=True)
+    rename_exchange = libc.renameat2
+    rename_exchange.argtypes = (ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint)
+    rename_exchange.restype = ctypes.c_int
+    if rename_exchange(-100, os.fsencode(temporary), -100, os.fsencode(directory), 2) != 0:
+        error = ctypes.get_errno()
+        raise OSError(error, os.strerror(error), str(directory))
+    # The old generation now occupies temporary. Retain it, including data files.
+    # Publication already succeeded; housekeeping must not turn success into failure.
+    try:
+        temporary.rename(directory.with_name(directory.name + ".old-" + uuid.uuid4().hex))
+    except OSError:
+        pass
 
 
 def _versions():
@@ -243,7 +254,7 @@ def _metadata():
     return {
         "python": sys.version, "hardware": _hardware(),
         "meminfo": Path("/proc/meminfo").read_text() if Path("/proc/meminfo").exists() else "",
-        "versions": _versions(), "script_sha256": _file_hash(SCRIPT),
+        "versions": _versions(),
         "git_head": revision.stdout.strip() if revision is not None and revision.returncode == 0 else None,
         "thread_environment": {key: os.environ.get(key) for key in
                                ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")},
@@ -371,13 +382,7 @@ def _rss(pid):
 
 
 def _native_metadata(api):
-    files = {}
-    for name, module in tuple(sys.modules.items()):
-        if "puck" in name and getattr(module, "__file__", None):
-            path = Path(module.__file__).resolve()
-            if path.is_file():
-                files[str(path)] = _file_hash(path)
-    return {"module": api.__file__, "module_sha256": files}
+    return {"module": api.__file__}
 
 
 def _search(index, config, search, output, data_dir):
@@ -532,105 +537,72 @@ def _pareto(rows):
     return list(reversed(frontier))
 
 
-def _identity(stage, config, dataset=None, engine=None, training_artifact=None):
-    identity = {"schema": SCHEMA, "stage": stage}
-    if stage != "prepare":
-        identity["script"] = _file_hash(SCRIPT)
-    if stage == "prepare":
-        versions = _versions()
-        identity.update({"data": config["data"], "gt": config["gt"],
-                         "data_semantics": {
-                             "normalization": "l2_once_float32",
-                             "metric": "l2",
-                         },
-                         "versions": {name: versions[name] for name in ("numpy", "faiss-cpu")}})
-    else:
-        identity.update({
-            "dataset": dataset, "engine": engine, "flags": _engine_config(config, engine),
-            "train_threads": config["runtime"]["train_threads"],
-            "implementation": _implementation_hash(),
-            "python": sys.version, "versions": _versions(), "hardware": _hardware(),
-        })
-        if stage == "build":
-            identity["build_threads"] = config["runtime"]["build_threads"]
-            identity["training_artifact"] = training_artifact
-    return identity
+def _upstream_data(work, artifact, config):
+    """Resolve new snapshots or legacy shared data, checking integrity and dimensions."""
+    directory = artifact / "data" if (artifact / "data").exists() else work / "data"
+    _validate_artifact(directory, ("db.fvecs", "query.npy", "gt.npy", "result.json"))
+    actual = _read_json(directory / "result.json").get("data", {})
+    for key in ("count", "queries", "dim", "k"):
+        if actual.get(key) != config["data"][key]:
+            raise ValueError(
+                f"data size mismatch: {key}: CLI={config['data'][key]}, "
+                f"data={actual.get(key)} ({directory / 'result.json'})")
+    return directory
 
 
-def _legacy_prepare_identity(config):
-    """Return the pre-change prepare identity for valid old data manifests."""
-    versions = _versions()
-    return {
-        "schema": SCHEMA,
-        "stage": "prepare",
-        "script": _file_hash(SCRIPT),
-        "data": config["data"],
-        "gt": config["gt"],
-        "versions": {name: versions[name] for name in ("numpy", "faiss-cpu")},
-    }
+def _data_metadata(directory):
+    """Read prepare metadata and validate query dimensions before search."""
+    import numpy as np
+
+    result = _read_json(directory / "result.json")
+    data = result.get("data", {})
+    queries = np.load(directory / "query.npy", allow_pickle=False)
+    if queries.ndim != 2 or queries.shape[1] != data["dim"] or queries.shape[0] != data["queries"]:
+        raise ValueError(f"query dimensions do not match data metadata: {directory / 'query.npy'}")
+    if data["count"] <= 0 or data["k"] > data["count"]:
+        raise ValueError(f"invalid data count/k metadata: {directory / 'result.json'}")
+    return data
 
 
-def _legacy_prepare_identity_matches(saved, config):
-    """Match old prepare identities while ignoring only their obsolete script hash."""
-    if not isinstance(saved, dict):
-        return False
-    expected = _legacy_prepare_identity(config)
-    saved_without_script = dict(saved)
-    saved_without_script.pop("script", None)
-    expected.pop("script", None)
-    return saved_without_script == expected
-
-
-def _implementation_hash():
-    """Return source/native fingerprint without importing the extension."""
-    files = {}
-    for folder in ("baidu_puck", "pyapi_wrapper", "interface", "gflags", "hierarchical_cluster",
-                   "puck", "tinker", "quantizer", "common"):
-        for path in sorted((PROJECT / folder).rglob("*")):
-            if path.is_file() and path.suffix in (".py", ".cpp", ".h", ".so", ".i"):
-                files[str(path.relative_to(PROJECT))] = _file_hash(path)
-    for path in sorted(PROJECT.glob("*.so")):
-        files[path.name] = _file_hash(path)
-    return _digest(files)
-
-
-def _data_ready(work, config):
-    directory = work / "data"
-    if not _cached(directory, _identity("prepare", config),
-                   compatible_identity_predicate=lambda saved: _legacy_prepare_identity_matches(
-                       saved, config)):
-        raise ValueError("prepare must complete first")
-    return _digest(_read_json(directory / "manifest.json"))
-
-
-def _build_identity(work, config, dataset, engine):
-    """Validate training cache and return build identity linked to its manifest; raise on mismatch."""
-    trained = work / engine / "train"
-    if not _cached(trained, _identity("train", config, dataset, engine)):
-        raise ValueError(f"train {engine} first")
-    artifact = _digest(_read_json(trained / "manifest.json"))
-    return _identity("build", config, dataset, engine, training_artifact=artifact)
+def _training_result(work, engine, built):
+    """Read optional legacy timing without rewriting the upstream manifest."""
+    path = built / "train-result.json"
+    if not path.is_file():
+        trained = work / engine / "train"
+        path = trained / "result.json"
+        if not path.is_file():
+            return {}
+        _validate_artifact(trained, ("result.json",))
+    return _read_json(path)
 
 
 def _lifecycle(work, config, engines, stage):
-    dataset = _data_ready(work, config)
+    if stage == "train":
+        _validate_artifact(work / "data", ("db.fvecs", "query.npy", "gt.npy", "result.json"))
+    else:
+        for engine in engines:
+            _validate_artifact(work / engine / "train", ("result.json", "index/db.fvecs"), ("index",))
+    sources = {
+        engine: _upstream_data(work, work / engine / "train" if stage == "build" else work, config)
+        for engine in engines
+    }
     for engine in engines:
-        identity = _identity(stage, config, dataset, engine)
-        if stage == "build":
-            identity = _build_identity(work, config, dataset, engine)
         destination = work / engine / stage
-        if _cached(destination, identity):
-            print(f"reuse {destination}")
-            continue
         trained = work / engine / "train"
         output = _begin(destination)
         index_dir = output / "index"
         if stage == "build":
-            # Copy codebooks, never hard-link mutable training/build artifacts.
-            shutil.copytree(trained / "index", index_dir, symlinks=True)
+            # Copy mutable native artifacts; relative data link stays inside the snapshot.
+            shutil.copytree(trained / "index", index_dir, symlinks=True,
+                            ignore=shutil.ignore_patterns("db.fvecs"))
+            shutil.copytree(sources[engine], output / "data")
+            (index_dir / "db.fvecs").symlink_to("../data/db.fvecs")
+            shutil.copyfile(trained / "result.json", output / "train-result.json")
         else:
+            # Self-contained snapshots let downstream stages read only their predecessor.
+            shutil.copytree(sources[engine], output / "data")
             index_dir.mkdir()
-            (index_dir / "db.fvecs").symlink_to(work / "data" / "db.fvecs")
+            (index_dir / "db.fvecs").symlink_to("../data/db.fvecs")
         _run_worker({
             "stage": stage, "config": config, "engine": engine, "output": str(output),
             "index_dir": str(index_dir),
@@ -638,70 +610,67 @@ def _lifecycle(work, config, engines, stage):
         result = _read_json(output / "result.json")
         _write_csv(output / "timing.csv", [{"engine": engine, "stage": stage, "seconds": result["seconds"]}],
                    ("engine", "stage", "seconds"))
-        _commit(output, destination, identity)
+        _commit(output, destination)
 
 
 def _search_all(work, config, engines):
     import numpy as np
 
-    dataset = _data_ready(work, config)
-    truth = np.load(work / "data" / "gt.npy", allow_pickle=False)
+    for engine in engines:
+        _validate_artifact(work / engine / "build", ("result.json", "index/db.fvecs"), ("index",))
+    sources = {engine: _upstream_data(work, work / engine / "build", config) for engine in engines}
+    report = work / "reports" / _digest({"config": config, "engines": engines})[:20]
+    output = _begin(report)
     rows = []
     stages = []
+    dataset = {}
     for engine in engines:
         built = work / engine / "build"
-        if not _cached(built, _build_identity(work, config, dataset, engine)):
-            raise ValueError(f"build {engine} first")
-        artifact = _digest(_read_json(built / "manifest.json"))
+        data_dir = sources[engine]
+        data_info = _data_metadata(data_dir)
+        truth = np.load(data_dir / "gt.npy", allow_pickle=False)
+        if truth.ndim != 2 or truth.shape != (data_info["queries"], data_info["k"]):
+            raise ValueError(f"ground-truth dimensions do not match data metadata: {data_dir / 'gt.npy'}")
+        dataset[engine] = data_info
         for stage in ("train", "build"):
-            result = _read_json(work / engine / stage / "result.json")
-            stages.append({"engine": engine, "stage": stage, "seconds": result["seconds"],
-                           "metadata": result["metadata"], "native": result["native"]})
-        for search in _grid(config, engine):
-            identity = {
-                "schema": SCHEMA, "script": _file_hash(SCRIPT), "artifact": artifact,
-                "search": search, "runtime": config["runtime"],
-                "hardware": _hardware(), "python": sys.version, "versions": _versions(),
-            }
-            destination = work / engine / "search" / _digest(identity)[:20]
-            if not _cached(destination, identity):
-                output = _begin(destination)
-                _run_worker({
-                    "stage": "search", "config": config, "engine": engine, "output": str(output),
-                    "index_dir": str(built / "index"), "data_dir": str(work / "data"), "search": search,
-                })
-                result = _read_json(output / "result.json")
-                for repeat, row in enumerate(result["repeats"]):
-                    labels = np.load(output / f"labels-{repeat}.npy", allow_pickle=False)
-                    row["recall"] = _recall(labels, truth, config["data"]["count"], config["data"]["k"])
-                result.update({
-                    "engine": engine, "search": search,
-                    "recall": statistics.median(row["recall"] for row in result["repeats"]),
-                    "qps": statistics.median(row["qps"] for row in result["repeats"]),
-                    "search_rss_bytes": max(row["sampled_rss_peak_bytes"] for row in result["repeats"]),
-                })
-                _write_json(output / "result.json", result)
-                _write_csv(output / "repeats.csv", result["repeats"], tuple(result["repeats"][0]))
-                _commit(output, destination, identity)
-            rows.append(_read_json(destination / "result.json"))
-    report_identity = {"config": config, "engines": engines, "dataset": dataset, "rows": _digest(rows)}
-    report = work / "reports" / _digest({"config": config, "engines": engines})[:20]
-    if not _cached(report, report_identity):
-        output = _begin(report)
-        _write_json(output / "summary.json", {
-            "config": config, "engines": engines, "dataset": dataset, "search": rows, "stages": stages,
-            "metadata": _metadata(),
-            "rss_definition": "sampled search-window RSS, not exact peak; includes return arrays",
-        })
-        _write_csv(output / "search.csv", rows,
-                   ("engine", "search", "recall", "qps", "loaded_rss_bytes", "search_rss_bytes"))
-        _write_csv(output / "stages.csv", stages, ("engine", "stage", "seconds"))
-        repeat_rows = [
-            dict(row, engine=result["engine"], search=result["search"], repeat=repeat)
-            for result in rows for repeat, row in enumerate(result["repeats"])
-        ]
-        _write_csv(output / "repeats.csv", repeat_rows, tuple(repeat_rows[0]))
-        _commit(output, report, report_identity)
+            result = (_training_result(work, engine, built) if stage == "train"
+                      else _read_json(built / "result.json"))
+            stages.append({"engine": engine, "stage": stage, "seconds": result.get("seconds"),
+                           "metadata": result.get("metadata", {}), "native": result.get("native", {})})
+        for point_number, search in enumerate(_grid(config, engine)):
+            point = output / "points" / engine / str(point_number)
+            point.mkdir(parents=True)
+            _run_worker({
+                "stage": "search", "config": config, "engine": engine, "output": str(point),
+                "index_dir": str(built / "index"), "data_dir": str(data_dir), "search": search,
+            })
+            result = _read_json(point / "result.json")
+            for repeat, row in enumerate(result["repeats"]):
+                labels = np.load(point / f"labels-{repeat}.npy", allow_pickle=False)
+                row["recall"] = _recall(labels, truth, data_info["count"], data_info["k"])
+            result.update({
+                "engine": engine, "search": search,
+                "recall": statistics.median(row["recall"] for row in result["repeats"]),
+                "qps": statistics.median(row["qps"] for row in result["repeats"]),
+                "search_rss_bytes": max(row["sampled_rss_peak_bytes"] for row in result["repeats"]),
+            })
+            _write_json(point / "result.json", result)
+            _write_csv(point / "repeats.csv", result["repeats"], tuple(result["repeats"][0]))
+            rows.append(result)
+    _write_json(output / "summary.json", {
+        "config": config, "engines": engines, "dataset": dataset, "search": rows, "stages": stages,
+        "metadata": _metadata(),
+        "rss_definition": "sampled search-window RSS, not exact peak; includes return arrays",
+    })
+    _write_csv(output / "search.csv", rows,
+               ("engine", "search", "recall", "qps", "loaded_rss_bytes", "search_rss_bytes"))
+    _write_csv(output / "stages.csv", stages, ("engine", "stage", "seconds"))
+    repeat_rows = [
+        dict(row, engine=result["engine"], search=result["search"], repeat=repeat)
+        for result in rows for repeat, row in enumerate(result["repeats"])
+    ]
+    _write_csv(output / "repeats.csv", repeat_rows, tuple(repeat_rows[0]))
+    _commit(output, report)
     print(f"report: {report}")
 
 
@@ -726,16 +695,55 @@ def _plot(report, output):
         ("qps", "Queries / second (median)", "recall-qps"),
         ("search_rss_bytes", "Search-window sampled RSS (MiB)", "recall-rss"),
     ):
-        figure, axis = plt.subplots(figsize=(8, 5))
+        figure, axis = plt.subplots(figsize=(12, 7))
         for engine in summary["engines"]:
             rows = [row for row in summary["search"] if row["engine"] == engine]
             divisor = 1024 ** 2 if metric == "search_rss_bytes" else 1
-            points = axis.scatter([row["recall"] for row in rows],
-                                  [row[metric] / divisor for row in rows], label=engine, alpha=0.7)
-            if metric == "qps":
-                frontier = _pareto(rows)
-                axis.plot([row["recall"] for row in frontier], [row["qps"] for row in frontier],
-                          color=points.get_facecolor()[0], linewidth=1)
+            color = f"C{summary['engines'].index(engine)}"
+            frontier = sorted(_pareto(rows), key=lambda row: row["recall"])
+            axis.scatter(
+                [row["recall"] for row in frontier],
+                [row[metric] / divisor for row in frontier],
+                color=color,
+                label=engine,
+                alpha=0.7,
+            )
+            for point_index, row in enumerate(frontier):
+                search = row["search"]
+                if engine == "hc":
+                    text = (f"c{search['search_coarse_count']},"
+                            f"n{search['neighbors_count'] // 1000}k")
+                elif engine == "puck":
+                    text = (f"c{search['search_coarse_count']},"
+                            f"f{search['filter_topk']}")
+                    if search["radius_rate"] != 1.0:
+                        text += f",r{search['radius_rate']:g}"
+                else:
+                    text = f"ef{search['ef_search']}"
+                offset_pattern = (
+                    (-10, 18), (10, 18), (-10, -24), (10, -24),
+                    (-18, 34), (18, 34), (-18, -40), (18, -40),
+                )
+                offset_index = (point_index + summary["engines"].index(engine) * 2) % len(offset_pattern)
+                offset_x, offset_y = offset_pattern[offset_index]
+                axis.annotate(
+                    text, (row["recall"], row[metric] / divisor),
+                    xytext=(offset_x, offset_y),
+                    textcoords="offset points",
+                    ha="right" if offset_x < 0 else "left",
+                    va="bottom" if offset_y > 0 else "top",
+                    fontsize=7, color=color,
+                    bbox={"boxstyle": "round,pad=0.15", "fc": "white", "ec": "none", "alpha": 0.8},
+                    arrowprops={"arrowstyle": "-", "color": color, "lw": 0.5},
+                )
+            if len(frontier) > 1:
+                axis.plot(
+                    [row["recall"] for row in frontier],
+                    [row[metric] / divisor for row in frontier],
+                    color=color,
+                    linewidth=2.5,
+                    alpha=0.95,
+                )
         if metric == "qps":
             axis.set_yscale("log")
         axis.set(xlabel=f"Recall@{summary['config']['data']['k']}", ylabel=ylabel)
@@ -748,9 +756,15 @@ def _plot(report, output):
     figure, axis = plt.subplots(figsize=(8, 5))
     positions = np.arange(len(summary["engines"]))
     for offset, stage in enumerate(("train", "build")):
-        seconds = [next(row["seconds"] for row in summary["stages"]
-                        if row["engine"] == engine and row["stage"] == stage) for engine in summary["engines"]]
-        axis.bar(positions + (offset - 0.5) * 0.36, seconds, 0.36, label=stage)
+        seconds = [next((row.get("seconds") for row in summary["stages"]
+                         if row["engine"] == engine and row["stage"] == stage), None)
+                   for engine in summary["engines"]]
+        locations = positions + (offset - 0.5) * 0.36
+        axis.bar(locations, [value if value is not None else float("nan") for value in seconds],
+                 0.36, label=stage)
+        for location, value in zip(locations, seconds):
+            if value is None:
+                axis.annotate("N/A", (location, 0), xytext=(0, 4), textcoords="offset points", ha="center")
     axis.set_xticks(positions)
     axis.set_xticklabels(summary["engines"])
     axis.set_ylabel("API wall time (seconds)")
@@ -759,6 +773,13 @@ def _plot(report, output):
     for extension in ("png", "svg"):
         figure.savefig(output / f"train-build.{extension}", dpi=160)
     plt.close(figure)
+
+
+def _find_report(work, config, engines):
+    """Locate the report by configuration name, validating only file integrity."""
+    report = work / "reports" / _digest({"config": config, "engines": engines})[:20]
+    _validate_artifact(report, ("summary.json", "search.csv", "stages.csv", "repeats.csv"))
+    return report
 
 
 def _execute(args, config):
@@ -770,34 +791,27 @@ def _execute(args, config):
     with (work / ".lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         if args.stage == "prepare":
-            identity = _identity("prepare", config)
             destination = work / "data"
-            if _cached(destination, identity,
-                       compatible_identity_predicate=lambda saved: _legacy_prepare_identity_matches(
-                           saved, config)):
-                print(f"reuse {destination}")
-                return
             print(f"Exact GT: {config['data']['count'] * config['data']['queries']:,} distances; "
                   "full defaults are expensive (10 billion pairs).", flush=True)
             output = _begin(destination)
             _run_worker({"stage": "prepare", "config": config, "output": str(output)})
-            _commit(output, destination, identity)
+            _commit(output, destination)
         elif args.stage in ("train", "build"):
             _lifecycle(work, config, args.engines, args.stage)
         elif args.stage == "search":
             _search_all(work, config, args.engines)
         else:
-            report = work / "reports" / _digest({"config": config, "engines": args.engines})[:20]
-            if not (report / "manifest.json").exists():
-                raise ValueError("matching search report required before plot")
-            saved = _read_json(report / "manifest.json")
-            _cached(report, saved["identity"])
+            report = getattr(args, "report", None)
+            if report is None:
+                report = _find_report(work, config, args.engines)
+            else:
+                report = report.resolve()
+                _validate_artifact(report, ("summary.json",))
             destination = work / "plots" / report.name
-            identity = {"report": _digest(saved), "script": _file_hash(SCRIPT)}
-            if not _cached(destination, identity):
-                output = _begin(destination)
-                _run_worker({"stage": "plot", "config": config, "output": str(output), "report": str(report)})
-                _commit(output, destination, identity)
+            output = _begin(destination)
+            _run_worker({"stage": "plot", "config": config, "output": str(output), "report": str(report)})
+            _commit(output, destination)
             print(f"plots: {destination}")
 
 
@@ -810,6 +824,7 @@ def main():
     parser.add_argument("stage", choices=("prepare", "train", "build", "search", "plot"))
     parser.add_argument("--work", type=Path, required=True, help="exclusive benchmark artifact directory")
     parser.add_argument("--config", type=Path, help="strict nested JSON overrides")
+    parser.add_argument("--report", type=Path, help="plot an explicit report directory, ignoring config lookup")
     parser.add_argument("--smoke", action="store_true",
                         help="4096 db / 32 queries / 8x8 clusters; not a full benchmark")
     parser.add_argument("--engines", nargs="+", choices=ENGINES, default=list(ENGINES))
@@ -817,6 +832,8 @@ def main():
     parser.add_argument("--train-threads", type=int)
     parser.add_argument("--build-threads", type=int)
     args = parser.parse_args()
+    if args.report is not None and args.stage != "plot":
+        parser.error("--report is only supported by plot")
     config = _defaults(args.smoke)
     if args.config is not None:
         _merge(config, _read_json(args.config))
