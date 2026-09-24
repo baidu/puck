@@ -725,33 +725,6 @@ class RandomDS(DatasetCompetitionFormat):
         return 10
 
 
-class SearchVip(DatasetCompetitionFormat):
-    def __init__(self, nb_M=1000):
-        self.nb_M = nb_M
-        self.nb = nb_M
-        self.d = 256
-        self.nq = 200000
-        self.count = 10
-        self.dtype = "float32"
-        self.ds_fn = "base.fbin.crop_nb_%d"%(self.nb)
-        self.qs_fn = "query.public.%dK.fbin"%(self.nq/1000)
-        self.gt_fn =  "search-vip-%d-top%d.brute_force"%(self.nb, self.count) 
-        self.base_url = "http://szwg-ps-www4.szwg01.baidu.com:8902/search-vip"
-        
-        self.basedir = os.path.join(BASEDIR, "search-vip")
-        self.prepare()
-
-    def default_count(self):
-        return self.count
-
-    def set_default_count(self, count):
-        if count > 0:
-            self.count = count
-
-    def distance(self):
-        return "angular"
-
-
 DATASETS = {
     'bigann-1B': lambda : BigANNDataset(1000),
     'bigann-100M': lambda : BigANNDataset(100),
@@ -786,6 +759,5 @@ DATASETS = {
 
     'random-range-xs': lambda : RandomRangeDS(10000, 1000, 20),
     'random-range-s': lambda : RandomRangeDS(100000, 1000, 50),
-    'search-vip-300w': lambda : SearchVip(3062738),
 
 }

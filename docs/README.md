@@ -26,6 +26,7 @@
 &ensp;&ensp;&ensp;&ensp;Puck在参赛的四个数据集中均排名第一<p>
            比赛详情：https://big-ann-benchmarks.com/neurips21.html        
            比赛结果：https://github.com/harsha-simhadri/big-ann-benchmarks/blob/main/neurips21/t1_t2/README.md#results-for-t1       
+&ensp;&ensp;&ensp;&ensp;NeurlPS’23 第二届BigANN Puck再次参赛获得了一冠一亚 https://big-ann-benchmarks.com/neurips23.html
 
 
 # 使用方法简介（训练、建库、检索、实时入库）
@@ -58,7 +59,7 @@ sh script/puck_train_control.sh -i 特征文件
 
 ## 了解训练&建库&检索参数
 
-&ensp;&ensp;&ensp;&ensp;该代码库的训练、建库和检索参数均通过gflags的方式指定。所有gflag定义参考[gflag](../puck/gflags/puck_gflags.cpp)。
+&ensp;&ensp;&ensp;&ensp;该代码库的训练、建库和检索参数均通过gflags的方式指定。所有gflag定义参考[gflag](../gflags/puck_gflags.cpp)。
 
 ### 核心训练&建库参数
 
@@ -151,8 +152,9 @@ sh script/puck_train_control.sh -i 特征文件
 - *whether_pq*：是否使用第二层量化，默认为true。当whether_pq=false时，该过程使用原始特征向量。
 
 &ensp;&ensp;&ensp;&ensp;**Tinker**
-- *tinker_neighborhood*：默认取值16。每个建库样本最多有tinker_neighborhood * 2 条边。每个样本存储图结构需要内存 = （2 * tinker_neighborhood + 1）* sizeof(int)。
-- *tinker_construction*：默认取值600。建库过程中，邻居节点的候选集大小，通常tinker_construction >> tinker_neighborhood。建库过程中，根据三角形选边方法，从tinker_construction个候选集样本中，最多选取tinker_neighborhood * 2个样本作为最终的邻居。
+- *brief_file_name*：默认值all_data.brief，位于index_path目录下。仅tinker_brief=true时用于建库，每个向量对应一行，行内以tab分隔过滤标签。与实时Puck的label_file_name（业务标识/URL文件）独立；原有Tinker brief配置需改用此参数，可显式指定原文件名。
+- *tinker_neighborhood_count*：默认取值16。每个建库样本最多保存tinker_neighborhood_count个邻居。每个样本的邻接表占用内存 = （tinker_neighborhood_count + 1）* sizeof(uint32_t)，其中一个uint32_t保存邻居数量，其余保存邻居ID；不包含特征和其他元数据。
+- *tinker_ef_construction*：默认取值600。建图时的候选搜索宽度，候选邻居经过选边和裁剪后，每个样本最终最多保存tinker_neighborhood_count个邻居。
 ### 核心检索参数
 检索流程可以分为三个过程，每个过程都有自己的检索参数，如下：
 #### 1.计算query与聚类中心的距离并排序  #### 
@@ -168,7 +170,7 @@ sh script/puck_train_control.sh -i 特征文件
 
 **Tinker**
 
-- *tinker_search_range*：结果集合队列长度。实际取值=std::max(tinker_search_range, topK)，检索结束时，返回该队列中的topK个样本。取值越大，检索范围越大，召回率越高，耗时增加，QPS下降。
+- *Request.ef_search*：每次 Tinker 请求可选的检索宽度，默认与topK相等，宽度越大，检索范围越大，通常召回率越高、耗时增加、QPS 下降。
 
 #### 3.最终需要获取的TopK结果  #### 
 
@@ -190,7 +192,7 @@ sh script/puck_train_control.sh -t
 sh script/puck_train_control.sh -b
 ````
 ## 检索 ##
-&ensp;&ensp;&ensp;&ensp;创建索引的实例后，通过init()方法加载索引，search检索最近的topk个样本，获得相似度（distance）和样本的local idx（建库顺序）。response内的distance、local_idx生命周期自行维护。可参考[demo](../demo/search_client.cpp)文件。
+&ensp;&ensp;&ensp;&ensp;创建索引的实例后，通过init()方法加载索引，search检索最近的topk个样本，获得相似度（distance）和样本的local idx（建库顺序）。response内的distance、local_idx生命周期自行维护。可参考[demo](./demo/search_client.cpp)文件。
 
 &ensp;&ensp;&ensp;&ensp;检索API如下。
 
@@ -215,7 +217,7 @@ int search(const Request* request, Response* response);
 ## 实时入库 ##
 &ensp;&ensp;&ensp;&ensp;部分场景会需要实时插入数据功能，请创建RealtimeInsertPuckIndex，并调用insert方法。insert的数据先落盘再写入内存，当insert成功时保证数据磁盘和内存都写入成功。
 
-&ensp;&ensp;&ensp;&ensp;可参考[demo](../demo/insert_demo.cpp)文件。
+&ensp;&ensp;&ensp;&ensp;可参考[demo](./demo/insert_demo.cpp)文件。
 
 核心api如下：
 ````c++
@@ -232,4 +234,3 @@ int insert(const InsertRequest);
 QQ群（Puck技术交流群）：913964818
 
 ![QQ Group](PuckQQGroup.jpeg)
-

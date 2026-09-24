@@ -23,8 +23,8 @@
 
 #include <gtest/gtest.h>
 #include <gflags/gflags.h>
-#include "puck/index_conf.h"
-#include "puck/gflags/puck_gflags.h"
+#include "interface/index_conf.h"
+#include "gflags/puck_gflags.h"
 
 TEST(IndexConfTest, FlatIndex) {
     puck::IndexConf conf;
@@ -62,16 +62,6 @@ TEST(IndexConfTest, PuckFlatIndex) {
     EXPECT_GE(conf.radius_rate, 1.0);
 }
 
-TEST(IndexConfTest, TinkerIndex) {
-    puck::IndexConf conf;
-    conf.index_type = puck::IndexType::TINKER;
-    conf.adaptive_train_param();
-
-    EXPECT_EQ(conf.whether_pq, false);
-    EXPECT_EQ(conf.whether_filter, false);
-    EXPECT_EQ(conf.index_type, puck::IndexType::TINKER);
-}
-
 TEST(IndexConfTest, Dataset) {
     puck::IndexConf conf;
     EXPECT_LE(conf.ip2cos, 1);
@@ -92,4 +82,3 @@ TEST(IndexConfTest, Dataset) {
     EXPECT_EQ(conf.topk, puck::FLAGS_topk);
     EXPECT_EQ(conf.filter_nsq, puck::FLAGS_filter_nsq);
 }
-

@@ -26,9 +26,9 @@
 #include <cstdlib>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
-#include "puck/tinker/tinker_index.h"
-#include "puck/gflags/puck_gflags.h"
-#include "puck/puck/puck_index.h"
+#include "tinker/tinker_index.h"
+#include "gflags/puck_gflags.h"
+#include "puck/puck_index.h"
 
 DEFINE_int32(index_type, 1, "");
 int main(int argc, char** argv) {
@@ -55,4 +55,3 @@ int main(int argc, char** argv) {
     return 0;
 }
 /* vim: set expandtab ts=4 sw=4 sts=4 tw=100: */
-

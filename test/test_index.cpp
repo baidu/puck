@@ -21,26 +21,36 @@
  *
  **/
 
-#include <gtest/gtest.h>
+#include <sys/wait.h>
 #include <fstream>
 #include <thread>
+#include <gtest/gtest.h>
 #include "test/test_index.h"
-#include "puck/gflags/puck_gflags.h"
-#include "puck/hierarchical_cluster/hierarchical_cluster_index.h"
-#include "puck/puck/puck_index.h"
-#include "puck/tinker/tinker_index.h"
-#include "puck/puck/realtime_insert_puck_index.h"
+#include "gflags/puck_gflags.h"
+#include "hierarchical_cluster/hierarchical_cluster_index.h"
+#include "puck/puck_index.h"
+#include "tinker/tinker_index.h"
+#include "puck/realtime_insert_puck_index.h"
 namespace puck {
-DEFINE_string(index_data_url, "ftp://ftp.irisa.fr/local/texmex/corpus/siftsmall.tar.gz", "");
+DEFINE_string(index_data_url, PUCK_TEST_DATA_ARCHIVE, "");
 DEFINE_int32(test_data_dim, 128, "");
 DEFINE_int32(query_cnt, 100, "");
 
-int shell_cmd(std::string& sys_cmd_str) {
-    char buff[1024];
-    sprintf(buff, "%s", sys_cmd_str.c_str());
+static std::string shell_quote(const std::string& value) {
+    std::string quoted = "'";
+    for (char character : value) {
+        if (character == '\'') {
+            quoted += "'\\''";
+        } else {
+            quoted += character;
+        }
+    }
+    quoted += "'";
+    return quoted;
+}
 
-    FILE* fstream = nullptr;
-    fstream = popen(buff, "r");
+int shell_cmd(const std::string& sys_cmd_str) {
+    FILE* fstream = popen(sys_cmd_str.c_str(), "r");
 
     if (!fstream) {
         return -1;
@@ -52,18 +62,29 @@ int shell_cmd(std::string& sys_cmd_str) {
         std::cout << tmp << std::endl; // can join each line as string
     }
 
-    if (fstream) {
-        pclose(fstream);
+    int status = pclose(fstream);
+    if (status == -1 || !WIFEXITED(status)) {
+        return -1;
     }
 
-    return 0;
+    return WEXITSTATUS(status);
 }
 
 int TestIndex::download_data() {
-    std::string download_cmd = "rm -f siftsmall.tar.gz && rm -rf siftsmall && wget " + FLAGS_index_data_url +
-                               " -O siftsmall.tar.gz";
+    std::string download_cmd;
+    std::string local_path = FLAGS_index_data_url;
+    if (FLAGS_index_data_url.rfind("file://", 0) == 0) {
+        local_path = FLAGS_index_data_url.substr(7);
+    }
+    std::ifstream local_archive(local_path.c_str(), std::ios::binary);
+    if (local_archive.good()) {
+        download_cmd = "rm -f siftsmall.tar.gz && rm -rf siftsmall && cp "
+                + shell_quote(local_path) + " siftsmall.tar.gz";
+    } else {
+        download_cmd = "rm -f siftsmall.tar.gz && rm -rf siftsmall && wget "
+                + shell_quote(FLAGS_index_data_url) + " -O siftsmall.tar.gz";
+    }
 
-    //std::string download_cmd = "rm -f siftsmall.tar.gz && cp ../../siftsmall.tar.gz .";
     if (shell_cmd(download_cmd) != 0) {
         return -1;
     }
@@ -96,6 +117,10 @@ static int insert(RealtimeInsertPuckIndex* index, const float* feature, std::str
 }
 
 int TestIndex::insert_index(int thread_cnt) {
+    if (thread_cnt <= 0) {
+        LOG(ERROR) << "insert thread count must be positive: " << thread_cnt;
+        return -1;
+    }
     _index.reset(new puck::PuckIndex());
 
     if (_index->train() != 0) {
@@ -141,7 +166,7 @@ int TestIndex::insert_index(int thread_cnt) {
         return -1;
     }
 
-    _index.release();
+    _index.reset();
 
     std::unique_ptr<puck::RealtimeInsertPuckIndex> insert_index(new puck::RealtimeInsertPuckIndex());
 
@@ -152,32 +177,62 @@ int TestIndex::insert_index(int thread_cnt) {
 
     LOG(INFO) << "\n\nstart insert \n\n";
     std::vector<std::thread> writers;
+    std::vector<int> insert_results;
+    size_t planned_insert_count = 0;
+    size_t successful_insert_count = 0;
 
-    for (int i = conf.total_point_count - 1 ; i >= idx; --i) {
-        std::string label = std::to_string(i);
-        //insert(insert_index.get(), feature.data() + i * conf.feature_dim, label);
-        //continue;
-        std::thread write_index(insert, insert_index.get(), feature.data() + (uint64_t)i * conf.feature_dim, label);
-        writers.push_back(std::move(write_index));
-
-        if (writers.size() >= thread_cnt) {
-            for (auto& t : writers) {
-                t.join();
+    for (int batch_end = static_cast<int>(conf.total_point_count) - 1;
+         batch_end >= static_cast<int>(idx); batch_end -= thread_cnt) {
+        const int batch_begin = std::max(
+                static_cast<int>(idx), batch_end - thread_cnt + 1);
+        const size_t batch_size = static_cast<size_t>(batch_end - batch_begin + 1);
+        insert_results.assign(batch_size, -1);
+        writers.clear();
+        writers.reserve(batch_size);
+        for (size_t slot = 0; slot < batch_size; ++slot) {
+            const int feature_index = batch_end - static_cast<int>(slot);
+            writers.emplace_back([&insert_index, &feature, &conf,
+                                  &insert_results, slot, feature_index]() {
+                insert_results[slot] = insert(
+                        insert_index.get(),
+                        feature.data() + static_cast<uint64_t>(feature_index) * conf.feature_dim,
+                        std::to_string(feature_index));
+            });
+        }
+        for (auto& writer : writers) {
+            writer.join();
+        }
+        planned_insert_count += batch_size;
+        for (size_t slot = 0; slot < batch_size; ++slot) {
+            if (insert_results[slot] != 0) {
+                const int feature_index = batch_end - static_cast<int>(slot);
+                LOG(ERROR) << "insert item " << feature_index
+                           << " failed, ret=" << insert_results[slot];
+                return -1;
             }
-
-            writers.clear();
+            ++successful_insert_count;
         }
     }
-
-    for (auto& t : writers) {
-        t.join();
+    const size_t expected_insert_count = conf.total_point_count - batch_build_cnt;
+    if (planned_insert_count != expected_insert_count ||
+        successful_insert_count != planned_insert_count) {
+        LOG(ERROR) << "insert count mismatch, expected=" << expected_insert_count
+                   << ", planned=" << planned_insert_count
+                   << ", successful=" << successful_insert_count;
+        return -1;
     }
 
     _index.reset(new puck::RealtimeInsertPuckIndex());
     return 0;
 }
 
-int TestIndex::build_index(int index_type) {
+TEST(RealtimeInsertPuckIndexTest, RejectsNonPositiveThreadCount) {
+    TestIndex index;
+    EXPECT_EQ(index.insert_index(0), -1);
+    EXPECT_EQ(index.insert_index(-1), -1);
+}
+
+int TestIndex::create_index(int index_type) {
     if (index_type == int(puck::IndexType::TINKER)) {
         _index.reset(new puck::TinkerIndex());
     } else if (index_type == int(puck::IndexType::PUCK)) {
@@ -186,6 +241,26 @@ int TestIndex::build_index(int index_type) {
         _index.reset(new puck::HierarchicalClusterIndex());
     } else {
         LOG(ERROR) << "index type error.\n";
+        return -1;
+    }
+    return 0;
+}
+
+int TestIndex::train_index(int index_type) {
+    if (create_index(index_type) != 0) {
+        return -1;
+    }
+
+    if (_index->train() != 0) {
+        LOG(ERROR) << "train Fail.\n";
+        return -1;
+    }
+
+    return 0;
+}
+
+int TestIndex::build_index(int index_type) {
+    if (create_index(index_type) != 0) {
         return -1;
     }
 
@@ -199,7 +274,6 @@ int TestIndex::build_index(int index_type) {
         return -1;
     }
 
-    //_index.release();
     return 0;
 }
 
@@ -314,6 +388,10 @@ float TestIndex::cmp_search_recall() {
 
     LOG(INFO) << "match_pair_cnt=" << 1.0 * match_pair_cnt / (FLAGS_query_cnt * FLAGS_topk);;
     return 1.0 * match_pair_cnt / (FLAGS_query_cnt * FLAGS_topk);
+}
+
+int TestIndex::search(const Request* request, Response* response) {
+    return _index->search(request, response);
 }
 
 }//namespace puck

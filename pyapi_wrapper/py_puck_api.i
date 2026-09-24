@@ -124,14 +124,16 @@ REV_SWIG_PTR(uint64_t, NPY_UINT64);
 
 
 namespace py_puck_api{
-    void update_gflag(const char* gflag_key, const char* gflag_val);
+    bool update_gflag(const char* gflag_key, const char* gflag_val);
     class PySearcher{
         public:
-            PySearcher();
-            int build(uint32_t n);
-            void show();
-            int init();
-            void search(uint32_t n, const float* x,const uint32_t topk, float* distances, uint32_t* labels);
+            PySearcher(int index_type);
+            int load();
+            int train();
+            int build();
+            int search(uint32_t n, const float* x, uint32_t topk,
+                       int64_t ef_search, float* distances, uint32_t* labels);
+            uint32_t dim() const;
             ~PySearcher();
     };
 };

@@ -11,21 +11,10 @@ message(STATUS "Found CMAKE_LIBRARY_OUTPUT_DIRECTORY: ${CMAKE_LIBRARY_OUTPUT_DIR
 include_directories(${PYTHON_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(CMAKE_SWIG_FLAGS "")
+set(CMAKE_SWIG_FLAGS "-relativeimport")
 
 set(SWIG_INTERFACE "./py_puck_api.i")
-file(GLOB SWIG_USED_CPP
-        "../puck/*.cpp"
-        "../puck/base/*.cpp"
-        "../puck/gflags/*.cpp"
-        "../puck/hierarchical_cluster/*.cpp"
-        "../puck/puck/puck_index.cpp"
-        "../puck/puck/quantization.cpp"
-        "../puck/puck/distances_simd.cpp"
-        "../puck/tinker/method/hnsw.cc"
-        "../puck/tinker/method/tinker_distfunc_opt.cc"
-        "../puck/tinker/tinker_index.cpp"
-        "./py_api_wrapper.cpp")
+set(SWIG_USED_CPP "./py_api_wrapper.cpp")
 
 set_source_files_properties(${SWIG_INTERFACE} PROPERTIES CPLUSPLUS ON)
 set_source_files_properties(${SWIG_INTERFACE} PROPERTIES SWIG_FLAGS "-includeall")
@@ -43,7 +32,7 @@ swig_add_library(   PyPuck
                     OUTPUT_DIR ./)
 
 # link all the libraries
-swig_link_libraries(PyPuck ${PYTHON_LIBRARY} )
+swig_link_libraries(PyPuck puck ${PYTHON_LIBRARY})
 swig_link_libraries(PyPuck  OpenMP::OpenMP_CXX)
 swig_link_libraries(PyPuck  ${MKL_LIBRARIES})
 
@@ -53,18 +42,23 @@ if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 message(STATUS "Found CMAKE_LIBRARY_OUTPUT_DIRECTORY: ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-#copy file
-file(GLOB py_puck_lib "${CMAKE_CURRENT_BINARY_DIR}/py_puck_api.py")
-
-file(COPY ${py_puck_lib} DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})    
+add_custom_command(TARGET PyPuck POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_CURRENT_BINARY_DIR}/py_puck_api.py"
+            "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/py_puck_api.py")
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/py_puck_api.py"
     DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-install(FILES ${py_puck_lib}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/puck)
+install(FILES
+    "${PROJECT_SOURCE_DIR}/baidu_puck/__init__.py"
+    "${PROJECT_SOURCE_DIR}/baidu_puck/_index.py"
+    "${PROJECT_SOURCE_DIR}/baidu_puck/hierarchical_cluster.py"
+    "${PROJECT_SOURCE_DIR}/baidu_puck/puck.py"
+    "${PROJECT_SOURCE_DIR}/baidu_puck/tinker.py"
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/baidu_puck)
 
 install(TARGETS PyPuck
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/puck
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/puck
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/baidu_puck
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/baidu_puck
     )

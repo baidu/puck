@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from setuptools import Extension, setup
+from setuptools import Extension, find_packages, setup
 from setuptools.command.build_ext import build_ext
 from setuptools.command.install_lib import install_lib
 
@@ -40,7 +40,7 @@ class CMakeBuild(build_ext):
         print("Path.cwd() = ", Path.cwd())
         print("ext_fullpath = ", ext_fullpath)
         extdir = ext_fullpath.parent.resolve()
-        print("extdir=",extdir)
+        print("extdir=", extdir)
 
         cfg = "Release"
         bin_full_path = Path.cwd() / self.get_ext_fullpath(ext.name).split("/")[0] / "output"
@@ -69,7 +69,7 @@ class CMakeBuild(build_ext):
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
         
-        print(ext.sourcedir,cmake_args, build_temp )
+        print(ext.sourcedir, cmake_args, build_temp )
         subprocess.run(
             ["cmake", "-DUSE_PYTHON=True", ext.sourcedir] + cmake_args, cwd=build_temp, check=True
         )
@@ -98,21 +98,20 @@ class InstallCMakeLibs(install_lib):
         super().run()
 
 setup(
-    name='puck',
+    name='baidu-puck',
     version='0.0.1',
     description='A library for efficient similarity search and clustering of dense vectors ',
     url='https://github.com/baidu/puck',
     author='Huang,Ben Yin,Jie',
     author_email='huangben@baidu.com,yinjie06@baidu.com',
     license='Apache License 2.0',
-    ext_modules=[CMakeExtension("puck._puck", ".")],
+    ext_modules=[CMakeExtension("baidu_puck._PyPuck", ".")],
     cmdclass={
         'build_ext': CMakeBuild,
         'install_lib': InstallCMakeLibs
     },
     zip_safe=False,
-    py_modules=['py_puck_api'],
+    packages=find_packages(include=["baidu_puck", "baidu_puck.*"]),
     python_requires='>=3.6',
 )
-
 

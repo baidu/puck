@@ -6,8 +6,8 @@
  * @brief
  ***********************************************************************/
 #include <glog/logging.h>
-#include "puck/puck/puck_index.h"
-#include "puck/tinker/tinker_index.h"
+#include "puck/puck_index.h"
+#include "tinker/tinker_index.h"
 #include "tools/string_split.h"
 
 int read_feature_data(std::string& input_file, std::vector<std::string>& pic_name,
@@ -114,6 +114,7 @@ int main(int argc, char** argv) {
     puck::Request request;
     puck::Response response;
     request.topk = 100;
+    request.ef_search = 500;  // Explicit per-request Tinker width; ignored by HC/Puck.
 
     response.distance = new float[request.topk];
     response.local_idx = new uint32_t[request.topk];

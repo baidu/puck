@@ -45,7 +45,7 @@ class Puck(BaseANN):
         return f"{name}.{self.indexkey}.puckindex"
 
     def load_index(self, dataset):
-        index_components = ["filer_data.dat","GNOIMI_coarse.dat","GNOIMI_fine.dat","index.dat","learn_assign.dat"]
+        index_components = ["filer_data.dat","coarse.dat","fine.dat","index.dat","learn_assign.dat"]
         ############ download index && update links
         print(self.index_name(dataset))
         if not os.path.exists(self.index_name(dataset)):
